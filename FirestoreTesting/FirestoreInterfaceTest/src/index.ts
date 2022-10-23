@@ -1,20 +1,14 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
-// Follow this pattern to import other Firebase services
-// import { } from 'firebase/<service>';
+import {initializeApp} from "firebase-admin/app"
 
-// TODO: Replace the following with your app's Firebase project configuration
-const firebaseConfig = {
-  //...
-};
+let credentialsLocation = "../heartschat-prod-creds.json"
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+let credentials = require(credentialsLocation)
 
-// Get a list of cities from your database
-async function getCities(db) {
-  const citiesCol = collection(db, 'cities');
-  const citySnapshot = await getDocs(citiesCol);
-  const cityList = citySnapshot.docs.map(doc => doc.data());
-  return cityList;
-}
+console.log(credentials)
+
+
+let myApp=initializeApp({
+    credential: credentials,
+    databaseURL: 'https://<DATABASE_NAME>.firebaseio.com'
+});
+
