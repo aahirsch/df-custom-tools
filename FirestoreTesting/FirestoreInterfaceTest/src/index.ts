@@ -1,14 +1,30 @@
-import {initializeApp} from "firebase-admin/app"
+const admin = require('firebase-admin')
 
 let credentialsLocation = "../heartschat-prod-creds.json"
 
 let credentials = require(credentialsLocation)
 
-console.log(credentials)
+admin.initializeApp({
+  credential: admin.credential.cert(credentials)
+})
 
+const db=admin.firestore()
 
-let myApp=initializeApp({
-    credential: credentials,
-    databaseURL: 'https://<DATABASE_NAME>.firebaseio.com'
-});
+const testingCollection=db.collection("testing-1")
 
+async function test1() {
+  let doc = testingCollection.doc("Cyrus' Test Doc")
+
+  console.log((await doc.get()).data())
+
+  await doc.set(
+    {
+      TestField: "TestWritten",
+      OtherField: "OtherWritten"
+    }
+  )
+
+  console.log((await doc.get()).data())
+}
+
+test1()

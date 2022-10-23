@@ -1,11 +1,30 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const app_1 = require("firebase-admin/app");
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const admin = require('firebase-admin');
 let credentialsLocation = "../heartschat-prod-creds.json";
-console.log(credentialsLocation);
 let credentials = require(credentialsLocation);
-console.log(credentials);
-let myApp = (0, app_1.initializeApp)({
-    credential: credentials,
-    databaseURL: 'https://<DATABASE_NAME>.firebaseio.com'
+admin.initializeApp({
+    credential: admin.credential.cert(credentials)
 });
+const db = admin.firestore();
+const testingCollection = db.collection("testing-1");
+function test1() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let doc = testingCollection.doc("Cyrus' Test Doc");
+        console.log((yield doc.get()).data());
+        yield doc.set({
+            TestField: "TestWritten",
+            OtherField: "OtherWritten"
+        });
+        console.log((yield doc.get()).data());
+    });
+}
+test1();
