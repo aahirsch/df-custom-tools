@@ -1,0 +1,20 @@
+{
+  "name": "FirestoreInterfaceTest",
+  "version": "1.0.0",
+  "description": "Test interface with firestore",
+  "main": "src/index.ts",
+  "license": "",
+  "scripts": {
+    "build": "tsc",
+    "start": "node bin/index.js"
+  },
+  "devDependencies": {
+    "@google-cloud/functions-framework": "^3.1.2",
+    "ts-node": "^10.9.1"
+  },
+  "dependencies": {
+    "@types/node": "^18.11.3",
+    "firebase": "^9.12.1",
+    "typescript": "^4.8.4"
+  }
+}
