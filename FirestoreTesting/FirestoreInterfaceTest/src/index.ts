@@ -1,3 +1,5 @@
+import {Firestore} from "@google-cloud/firestore"
+
 const admin = require('firebase-admin')
 
 let credentialsLocation = "../heartschat-prod-creds.json"
@@ -8,7 +10,7 @@ admin.initializeApp({
   credential: admin.credential.cert(credentials)
 })
 
-const db=admin.firestore()
+const db:Firestore=admin.firestore()
 
 const testingCollection=db.collection("testing-1")
 
