@@ -11,7 +11,10 @@ interface Message {
 }
 
 interface Conversation {
+  surveyId: string,
+  agentId: string,
   responseId: string,
+  //assume messages are ordered
   messages: Message[]
 }
 
@@ -22,8 +25,10 @@ interface Survey {
 
 interface DatabaseInterface {
   insertMessage: (topLevelCollection:CollectionReference, message: Message) => Promise<void>,
+
+  //this runs under the assumption that the conversation is not already in the database
   insertConversation: (topLevelCollection:CollectionReference, conversation:Conversation) => Promise<void>,
-  retrieveConversation: (topLevelCollection:CollectionReference) => Promise<Conversation>,
+  retrieveConversation: (topLevelCollection:CollectionReference, responseId:string) => Promise<Conversation>,
   retrieveSurvey: (topLevelCollection:CollectionReference) => Promise<Survey>,
   retrieveAll: (topLevelCollection:CollectionReference)  => Promise<Conversation[]>,
 
