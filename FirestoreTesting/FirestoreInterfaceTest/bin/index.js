@@ -28,4 +28,42 @@ function test1() {
         console.log((yield doc.get()).data());
     });
 }
-test1();
+function test2() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const testingCollection = db.collection("testing-1");
+        const badDoc = testingCollection.doc("doc that's not there");
+        console.log(badDoc);
+        console.log(yield badDoc.get());
+        console.log(yield testingCollection.doc("Cyrus' Test Doc"));
+        console.log(yield testingCollection.listDocuments());
+    });
+}
+let testMessage = {
+    surveyId: "testSurveyId",
+    agentId: "testAgentId",
+    responseId: "testResponseId",
+    input: "testInput",
+    output: "testOutput",
+    parameters: {
+        testParam: "testParamValue",
+        testParam2: "testParamValue2"
+    },
+    timestamp: "testTimestamp"
+};
+function test3() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const testingCollection = db.collection("testing-1");
+        yield testingCollection.doc("newdoc").collection("F_records").add(testMessage);
+    });
+}
+function test4() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const testingCollection = db.collection("testing-1");
+        const q = testingCollection.where("TestField", "==", "1").limit(1);
+        const result = yield q.get();
+        result.forEach((doc) => {
+            console.log(doc.data());
+        });
+    });
+}
+test4();
