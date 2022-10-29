@@ -1,9 +1,9 @@
 import {CollectionReference} from "@google-cloud/firestore"
 
 interface Message {
-  surveyId: string|null,
-  agentId: string|null,
-  responseId: string|null,
+  surveyId?: string,
+  agentId?: string,
+  responseId?: string,
   input: string,
   output: string,
   parameters:any,
@@ -28,8 +28,10 @@ interface DatabaseInterface {
 
   //this runs under the assumption that the conversation is not already in the database
   insertConversation: (topLevelCollection:CollectionReference, conversation:Conversation) => Promise<void>,
-  retrieveConversation: (topLevelCollection:CollectionReference, responseId:string) => Promise<Conversation>,
-  retrieveSurvey: (topLevelCollection:CollectionReference) => Promise<Survey>,
+
+  //this needs the surveyId and agentId for easier access. We therefore assert that these are known at the time of function call
+  retrieveConversation: (topLevelCollection:CollectionReference,surveyId:string, agentId:string ,responseId:string) => Promise<Conversation>,
+  retrieveSurvey: (topLevelCollection:CollectionReference,surveyId:string) => Promise<Survey>,
   retrieveAll: (topLevelCollection:CollectionReference)  => Promise<Conversation[]>,
 
   giveAccessToSurveys: (topLevelCollection:CollectionReference, researcherId: string, surveyIds: string[]) => Promise<void>,

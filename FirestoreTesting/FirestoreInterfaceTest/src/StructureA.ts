@@ -2,7 +2,66 @@ import {CollectionReference, DocumentReference,QuerySnapshot,DocumentData,Timest
 
 import { DatabaseInterface,Message,Conversation,Survey } from "./DatabaseInterface"
 
+
+
+const readMessagesFromConversation= (conversationDocumentReference:DocumentReference):Promise<Message[]> => {
+  return new Promise<Message[]>(async (resolve,reject) => {
+    const messages:Message[] = []
+
+    const q1=await conversationDocumentReference.collection("messages").orderBy("timestamp","asc").get()
+
+    q1.forEach((doc) => {
+      const data = doc.data()
+      messages.push({
+        surveyId: data.surveyId,
+        agentId: data.agentId,
+        responseId: data.responseId,
+        input: data.input,
+        output: data.output,
+        parameters: data.parameters,
+        timestamp: (data.timestamp as Timestamp).toDate().toISOString()
+      })
+    })
+
+    resolve(messages)
+  })
+}
+
+const readConversationsFromSurvey = (surveyDocumentReference:DocumentReference):Promise<Conversation[]> => {
+  return new Promise<Conversation[]>(async (resolve,reject) => {
+    const conversations:Conversation[] = []
+
+    const q1=await surveyDocumentReference.collection("conversations").get()
+
+    const myPromises:Promise<void>[] = []
+
+    q1.forEach((doc) => {
+      const data = doc.data()
+      myPromises.push(
+        new Promise<void>(async (resolve,reject) => {
+          conversations.push({
+            surveyId: data.surveyId,
+            agentId: data.agentId,
+            responseId: data.responseId,
+            messages: await readMessagesFromConversation(doc.ref)
+          })
+          resolve()
+        })
+      )
+    })
+    
+    //because this is async we need to wait for all the promises to resolve before returning the object
+    await Promise.all(myPromises)
+
+    resolve(conversations)
+
+  })
+}
+
+
 const StructureA:DatabaseInterface = {
+
+
   insertMessage: (topLevelCollection:CollectionReference, message: Message): Promise<void> => {
     return new Promise(async (resolve, reject) => {     
 
@@ -117,35 +176,151 @@ const StructureA:DatabaseInterface = {
     })
   },
 
-  retrieveConversation:(topLevelCollection:CollectionReference, responseId:string): Promise<Conversation> =>{
+  retrieveConversation:(topLevelCollection:CollectionReference,surveyId:string, agentId:string, responseId:string): Promise<Conversation> =>{
     return new Promise(async (resolve, reject) => {
-      //use collecitonGroup querry to get all the conversations in the database
+      const q1 = await topLevelCollection.where("surveyId", "==", surveyId)
+      .where("agentId", "==", agentId)
+      .limit(1)
+      .get()
+
+      if(q1.empty){
+        reject("No conversation found")
+      }
+
+      const q2 = await q1.docs[0].ref.collection("conversations").where("responseId", "==", responseId).limit(1).get()
+
+      if(q2.empty){
+        reject("No conversation found")
+      }
+
+      resolve( {
+        surveyId: surveyId,
+        agentId: agentId,
+        responseId: responseId,
+        messages: await readMessagesFromConversation(q2.docs[0].ref)
+      } as Conversation)
       
-      reject() 
+    })
+  },
+
+  retrieveSurvey: (topLevelCollection:CollectionReference,surveyId:string): Promise<Survey> => {
+    return new Promise(async (resolve, reject) => {
+      const q1 = await topLevelCollection.where("surveyId", "==", surveyId).get()
+
+      if(q1.empty){
+        reject("No survey found")
+      }
+
+      const conversations:Conversation[][] = []
+      
+      const myPromises:Promise<void>[] = []
+
+      q1.forEach( (doc) => {
+        myPromises.push(new Promise<void>(async (resolve, reject) => {
+          conversations.push(await readConversationsFromSurvey(doc.ref))
+          resolve()
+        }))
+        
+      })
+
+      await Promise.all(myPromises)
+
+      resolve( {
+        surveyId: surveyId,
+        conversations: conversations.flat()
+      } as Survey)
 
     })
   },
 
-  retrieveSurvey: (topLevelCollection:CollectionReference): Promise<Survey> => {
-    throw new Error("Function not implemented.");
-  },
-
   retrieveAll: (topLevelCollection:CollectionReference): Promise<Conversation[]> => {
-    throw new Error("Function not implemented.");
+    return new Promise(async (resolve, reject) => {
+      const q1 = await topLevelCollection.get()
+
+      if(q1.empty){
+        resolve([])
+      }
+
+      const conversations:Conversation[][] = []
+      
+      const myPromises:Promise<void>[] = []
+
+      q1.forEach( (doc) => {
+        myPromises.push(new Promise<void>(async (resolve, reject) => {
+          conversations.push(await readConversationsFromSurvey(doc.ref))
+          resolve()
+        }))
+        
+      })
+
+      await Promise.all(myPromises)
+
+      resolve(conversations.flat())
+
+    })
   },
 
   giveAccessToSurveys: (topLevelCollection:CollectionReference, researcherId: string, surveyIds: string[]): Promise<void> => {
-    throw new Error("Function not implemented.");
+    return new Promise(async (resolve, reject) => {
+      const q1 = await topLevelCollection.where("surveyId", "in", surveyIds).get()
+
+      const myPromises:Promise<any>[] = []
+
+      q1.forEach( (doc) => {
+        if (!(researcherId in doc.data().authorizedResearcherIds)) {
+          myPromises.push(
+            doc.ref.update({
+              authorizedResearcherIds: doc.data().authorizedResearcherIds.concat(researcherId)
+            })
+          )
+        }
+      })
+
+      await Promise.all(myPromises)
+      resolve()
+    })
   },
 
   getAccessibleSurveys: (topLevelCollection:CollectionReference, researcherId: String): Promise<string[]> => {
-    throw new Error("Function not implemented.");
+    return new Promise<string[]>(async (resolve, reject) => {
+      const q1 = await topLevelCollection.where("authorizedResearcherIds", "array-contains", researcherId).get()
+
+      const surveyIds:string[] = []
+
+      const myPromises:Promise<void>[] = []
+
+      q1.forEach( (doc) => {
+        myPromises.push(new Promise<void>(async (resolve,reject) => {
+          surveyIds.push(doc.data().surveyId)
+          resolve()
+        }))
+      })
+
+      resolve(surveyIds)
+    })
   },
 
   getConversationsBetween: (topLevelCollection:CollectionReference, start: Date, end: Date): Promise<Conversation[]> => {
-    throw new Error("Function not implemented.");
+    return new Promise<Conversation[]>(async (resolve, reject) => {
+      const q1 = await topLevelCollection.where("startDate", ">=", Timestamp.fromDate(start)).where("endDate", "<=", Timestamp.fromDate(end)).get()
+
+      const conversations:Conversation[][] = []
+
+      const myPromises:Promise<void>[] = []
+
+      q1.forEach( (doc) => {
+        myPromises.push(new Promise<void>(async (resolve, reject) => {
+          conversations.push(await readConversationsFromSurvey(doc.ref))
+          resolve()
+        }))
+      }
+      )
+
+      await Promise.all(myPromises)
+
+      resolve(conversations.flat())
+    })
   }
 }
-
 
 export default StructureA
