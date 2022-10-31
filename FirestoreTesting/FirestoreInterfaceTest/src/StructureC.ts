@@ -2,9 +2,11 @@ import {CollectionReference, DocumentReference,QuerySnapshot,DocumentData,Timest
 
 import { DatabaseInterface,Message,Conversation,Survey } from "./DatabaseInterface"
 
+const readMessagesFromConversation= (conversationDocumentReference:DocumentReference):Promise<Message[]> => {
+  return new Promise<Message[]>(async (resolve,reject) => {}) 
+}
 
-
-const StructureB:DatabaseInterface = {
+const StructureC:DatabaseInterface = {
 
 
   insertMessage: (topLevelCollection:CollectionReference, message: Message): Promise<void> => {
@@ -251,4 +253,4 @@ const StructureB:DatabaseInterface = {
   }
 }
 
-export default StructureB
+export default StructureC

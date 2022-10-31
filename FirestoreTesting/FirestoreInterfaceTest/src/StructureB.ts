@@ -88,7 +88,7 @@ const StructureB:DatabaseInterface = {
       const conversationStartDate:Timestamp = Timestamp.fromDate(new Date(conversation.messages[0].timestamp))
       const conversationEndDate:Timestamp = Timestamp.fromDate(new Date(conversation.messages[conversation.messages.length-1].timestamp))
 
-      await topLevelCollection.add({
+      const myDoc1 = await topLevelCollection.add({
         surveyId: conversation.surveyId,
         agentId: conversation.agentId,
         responseId: conversation.responseId,
@@ -96,6 +96,21 @@ const StructureB:DatabaseInterface = {
         startDate: conversationStartDate,
         endDate: conversationEndDate
       })
+
+      const myPromises:Promise<any>[] = []
+
+      conversation.messages.forEach(async (message) => {
+        const messageTimestamp:Timestamp = Timestamp.fromDate(new Date(message.timestamp))
+        myPromises.push(myDoc1.collection("messages").add(
+          {
+            input: message.input,
+            output: message.output,
+            parameters: message.parameters,
+            timestamp: messageTimestamp
+          }))
+      })
+
+      await Promise.all(myPromises)
 
       resolve()
     })

@@ -1,6 +1,11 @@
 import {Firestore,DocumentData} from "@google-cloud/firestore"
 
-import { DatabaseInterface,Message, Survey } from "./DatabaseInterface"
+import { Conversation, DatabaseInterface,Message, Survey } from "./DatabaseInterface"
+
+import StructureA from "./StructureA"
+import StructureB from "./StructureB"
+import StructureC from "./StructureC"
+
 
 const admin = require('firebase-admin')
 
@@ -80,4 +85,38 @@ async function test4() {
 
 }
 
-test4()
+async function testUploadConversation(structure: DatabaseInterface,topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
+
+  const testConversation:Conversation = {
+    surveyId: "testSurveyId",
+    agentId: "testAgentId",
+    responseId: "testResponseId",
+    messages: [
+      {
+        input: "testInput1",
+        output: "testOutput1",
+        parameters: {
+          testParam: "testParamValue",
+          testParam2: "testParamValue2"
+        },
+        timestamp: "6/24/2022 4:03"
+      } as Message,
+      {
+        input: "testInput2",
+        output: "testOutput2",
+        parameters: {
+          testParam: "testParamValue",
+          testParam2: "testParamValue2"
+        },
+        timestamp:"6/24/2022 4:03"
+      } as Message
+    ] }
+
+  await structure.insertConversation(testingCollection,testConversation)
+
+}
+
+testUploadConversation(StructureA,"testing-A")
+
+testUploadConversation(StructureB,"testing-B")
