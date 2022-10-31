@@ -101,12 +101,12 @@ const StructureA:DatabaseInterface = {
       if(!q1.empty){
         const doc1 = q1.docs[0].data()
         if(doc1.startDate > messageTimestamp){
-          myDoc1.update({
+          await myDoc1.update({
             startDate: messageTimestamp
           })
         }
         if(doc1.endDate < messageTimestamp){
-          myDoc1.update({
+          await myDoc1.update({
             endDate: messageTimestamp
           })
         }
@@ -158,12 +158,12 @@ const StructureA:DatabaseInterface = {
       if(!q1.empty){
         const doc1 = q1.docs[0].data()
         if(doc1.startDate > conversationStartDate){
-          myDoc1.update({
+          await myDoc1.update({
             startDate: conversationStartDate
           })
         }
         if(doc1.endDate < conversationEndDate){
-          myDoc1.update({
+          await myDoc1.update({
             endDate: conversationEndDate
           })
         }

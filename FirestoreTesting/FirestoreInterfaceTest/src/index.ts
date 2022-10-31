@@ -117,6 +117,36 @@ async function testUploadConversation(structure: DatabaseInterface,topLevelColle
 
 }
 
-testUploadConversation(StructureA,"testing-A")
+async function testUploadMessage(structure: DatabaseInterface,topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
 
-testUploadConversation(StructureB,"testing-B")
+  const testMessage:Message = {
+    surveyId: "testSurveyId",
+    agentId: "testAgentId",
+    responseId: "testResponseId",
+    input: "testInput",
+    output: "testOutput",
+    parameters: {
+      testParam: "testParamValue",
+      testParam2: "testParamValue2"
+    },
+    timestamp: "6/24/2022 4:03"
+  }
+
+  await structure.insertMessage(testingCollection,testMessage)
+
+}
+
+
+
+//testUploadConversation(StructureA,"testing-A")
+
+//testUploadConversation(StructureB,"testing-B")
+
+//testUploadConversation(StructureC,"testing-C")
+
+//testUploadMessage(StructureA,"testing-A")
+
+//testUploadMessage(StructureB,"testing-B")
+
+testUploadMessage(StructureC,"testing-C")
