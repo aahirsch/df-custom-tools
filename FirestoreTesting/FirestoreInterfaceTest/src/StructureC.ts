@@ -272,13 +272,8 @@ const StructureC:DatabaseInterface = {
 
       const surveyIds:string[] = []
 
-      const myPromises:Promise<void>[] = []
-
       q1.forEach( (doc) => {
-        myPromises.push(new Promise<void>(async (resolve,reject) => {
           surveyIds.push(doc.data().surveyId)
-          resolve()
-        }))
       })
 
       resolve(surveyIds)
