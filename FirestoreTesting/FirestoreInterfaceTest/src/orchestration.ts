@@ -1,9 +1,12 @@
 // imports
 import {Firestore,DocumentData} from "@google-cloud/firestore"
 
-import { DatabaseInterface,Message, Survey } from "./DatabaseInterface"
+import { DatabaseInterface,Message, Survey, Conversation } from "./DatabaseInterface"
 
 import {parser} from "./parser"
+
+import {conversion} from "./conversion"
+
 import StructureA from "./StructureA"
 
 
@@ -32,21 +35,35 @@ let endsnipit = data[10];
 const testingCollection = db.collection("testing-2")
 
 // have to make csv --> JSON into csv --> Message i think
-
-for(var i = 0; i < data.length; i++){
-  StructureA.insertMessage(testingCollection, data[i] as Message)
+async function testUploadMessage(structure: DatabaseInterface,topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
+  await structure.insertMessage(testingCollection, data[0] as Message)
 }
- // Still have questions on insert conversation
 
-StructureA.retrieveConversation(testingCollection,snipit.surveyId, snipit.agentId ,snipit.output) 
+testUploadMessage(StructureA,"testing-A")
 
-StructureA.retrieveSurvey(testingCollection,snipit[0]) 
 
-StructureA.retrieveAll(testingCollection)
+// for(let i = 0; i < data.length; i++){
+//   StructureA.insertMessage(testingCollection, data[i] as Message)
+// }
 
-StructureA.giveAccessToSurveys(testingCollection, "Mark", [snipit.surveId, endsnipit.SurveyId]) 
 
-StructureA.getAccessibleSurveys(testingCollection, "Mark") 
+// let conversations = conversion(data);
+// for (let i = 0; i < conversations.length; i++){
+//   StructureA.insertConversation(testingCollection, conversations[i])
+// }
 
-StructureA.getConversationsBetween(testingCollection, snipit.timestamp, endsnipit.timestamp) 
+
+
+// StructureA.retrieveConversation(testingCollection,snipit.surveyId, snipit.agentId ,snipit.output) 
+
+// StructureA.retrieveSurvey(testingCollection,snipit[0]) 
+
+// StructureA.retrieveAll(testingCollection)
+
+// StructureA.giveAccessToSurveys(testingCollection, "Mark", [snipit.surveId, endsnipit.SurveyId]) 
+
+// StructureA.getAccessibleSurveys(testingCollection, "Mark") 
+
+// StructureA.getConversationsBetween(testingCollection, snipit.timestamp, endsnipit.timestamp) 
 

@@ -4,3 +4,4 @@ heartschat-prod-a505-9599eda00cef.json
 .__pycache__
 FirestoreTesting/FirestoreInterfaceTest/node_modules/*
 FirestoreTesting/FirestoreInterfaceTest/heartschat-prod-creds.json
+FirestoreTesting/FirestoreInterfaceTest/bin/*

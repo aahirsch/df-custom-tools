@@ -8,7 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const StructureA_1 = __importDefault(require("./StructureA"));
+const StructureB_1 = __importDefault(require("./StructureB"));
 const admin = require('firebase-admin');
 let credentialsLocation = "../heartschat-prod-creds.json";
 let credentials = require(credentialsLocation);
@@ -66,4 +71,36 @@ function test4() {
         });
     });
 }
-test4();
+function testUploadConversation(structure, topLevelCollection) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const testingCollection = db.collection(topLevelCollection);
+        const testConversation = {
+            surveyId: "testSurveyId",
+            agentId: "testAgentId",
+            responseId: "testResponseId",
+            messages: [
+                {
+                    input: "testInput1",
+                    output: "testOutput1",
+                    parameters: {
+                        testParam: "testParamValue",
+                        testParam2: "testParamValue2"
+                    },
+                    timestamp: "6/24/2022 4:03"
+                },
+                {
+                    input: "testInput2",
+                    output: "testOutput2",
+                    parameters: {
+                        testParam: "testParamValue",
+                        testParam2: "testParamValue2"
+                    },
+                    timestamp: "6/24/2022 4:03"
+                }
+            ]
+        };
+        yield structure.insertConversation(testingCollection, testConversation);
+    });
+}
+testUploadConversation(StructureA_1.default, "testing-A");
+testUploadConversation(StructureB_1.default, "testing-B");
