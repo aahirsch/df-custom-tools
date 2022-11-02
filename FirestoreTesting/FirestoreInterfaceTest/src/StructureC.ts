@@ -2,7 +2,6 @@ import {CollectionReference, DocumentReference,QuerySnapshot,DocumentData,Timest
 
 import { DatabaseInterface,Message,Conversation,Survey } from "./DatabaseInterface"
 
-
 const StructureC:DatabaseInterface = {
 
 
@@ -130,20 +129,20 @@ const StructureC:DatabaseInterface = {
     return new Promise(async (resolve, reject) => {
       const q1 = await topLevelCollection.where("surveyId", "==", surveyId)
       .where("agentId", "==", agentId)
-      .where("responseId", "==", responseId)
       .limit(1)
       .get()
 
       if(q1.empty){
         reject("No conversation found")
+        return
       }
-
       const data = q1.docs[0].data()
 
       const q2 = await q1.docs[0].ref.collection("conversations").where("responseId", "==", responseId).limit(1).get()
 
       if(q2.empty){
         reject("No conversation found")
+        return
       }
       else{
         resolve({
@@ -155,7 +154,7 @@ const StructureC:DatabaseInterface = {
               input: message.input,
               output: message.output,
               parameters: message.parameters,
-              timestamp: (data.timestamp as Timestamp).toDate().toISOString() 
+              timestamp: (message.timestamp as Timestamp).toDate().toISOString() 
             } as Message
           })
       } as Conversation)
@@ -170,6 +169,7 @@ const StructureC:DatabaseInterface = {
 
       if(q1.empty){
         reject("No survey found")
+        return
       }
 
       const conversations:Conversation[] = []
@@ -177,20 +177,26 @@ const StructureC:DatabaseInterface = {
       const myPromises:Promise<void>[] = []
 
       q1.forEach( (doc) => {
+
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          conversations.push({
-            surveyId: doc.data().surveyId,
-            agentId: doc.data().agentId,
-            responseId: doc.data().responseId,
-            messages: doc.data().messages.map((message:any) => {
-              return {
-                input: message.input,
-                output: message.output,
-                parameters: message.parameters,
-                timestamp: (message.timestamp as Timestamp).toDate().toISOString()
-              } as Message
-            })
-          } as Conversation)
+          const q2 = await doc.ref.collection("conversations").get()
+          
+          q2.forEach( (doc2) => {
+            conversations.push({
+              surveyId: doc2.data().surveyId,
+              agentId: doc2.data().agentId,
+              responseId: doc2.data().responseId,
+              messages: doc2.data().messages.map((message:any) => {
+                return {
+                  input: message.input,
+                  output: message.output,
+                  parameters: message.parameters,
+                  timestamp: (message.timestamp as Timestamp).toDate().toISOString()
+                } as Message
+              })
+            } as Conversation)
+          })
+
           resolve()
         }))
         
@@ -212,6 +218,7 @@ const StructureC:DatabaseInterface = {
 
       if(q1.empty){
         resolve([])
+        return
       }
 
       const conversations:Conversation[] = []
@@ -220,19 +227,24 @@ const StructureC:DatabaseInterface = {
 
       q1.forEach( (doc) => {
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          conversations.push({
-            surveyId: doc.data().surveyId,
-            agentId: doc.data().agentId,
-            responseId: doc.data().responseId,
-            messages: doc.data().messages.map((message:any) => {
-              return {
-                input: message.input,
-                output: message.output,
-                parameters: message.parameters,
-                timestamp: (message.timestamp as Timestamp).toDate().toISOString()
-              } as Message
-            })
-          } as Conversation)
+          const q2 = await doc.ref.collection("conversations").get()
+          
+          q2.forEach( (doc2) => {
+            conversations.push({
+              surveyId: doc2.data().surveyId,
+              agentId: doc2.data().agentId,
+              responseId: doc2.data().responseId,
+              messages: doc2.data().messages.map((message:any) => {
+                return {
+                  input: message.input,
+                  output: message.output,
+                  parameters: message.parameters,
+                  timestamp: (message.timestamp as Timestamp).toDate().toISOString()
+                } as Message
+              })
+            } as Conversation)
+          })
+
           resolve()
         }))
         

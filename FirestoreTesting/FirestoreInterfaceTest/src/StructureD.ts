@@ -56,6 +56,7 @@ const StructureD:DatabaseInterface = {
 
       if(q1.empty){
         reject("No conversation found")
+        return
       }
 
       const out:Conversation ={
@@ -69,9 +70,6 @@ const StructureD:DatabaseInterface = {
         const data = doc.data()
         if(data.responseId == responseId){
           out.messages.push({
-            surveyId: data.surveyId,
-            agentId: data.agentId,
-            responseId: data.responseId,
             input: data.input,
             output: data.output,
             parameters: data.parameters,
@@ -91,6 +89,7 @@ const StructureD:DatabaseInterface = {
 
       if(q1.empty){
         reject("No survey found")
+        return
       }
 
       const out:Survey = {
@@ -143,6 +142,7 @@ const StructureD:DatabaseInterface = {
 
       if(q1.empty){
         resolve([])
+        return
       }
 
       const conversations:Conversation[] = []

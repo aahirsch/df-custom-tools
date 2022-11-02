@@ -13,9 +13,6 @@ const readMessagesFromConversation= (conversationDocumentReference:DocumentRefer
     q1.forEach((doc) => {
       const data = doc.data()
       messages.push({
-        surveyId: data.surveyId,
-        agentId: data.agentId,
-        responseId: data.responseId,
         input: data.input,
         output: data.output,
         parameters: data.parameters,
@@ -185,12 +182,14 @@ const StructureA:DatabaseInterface = {
 
       if(q1.empty){
         reject("No conversation found")
+        return
       }
 
       const q2 = await q1.docs[0].ref.collection("conversations").where("responseId", "==", responseId).limit(1).get()
 
       if(q2.empty){
         reject("No conversation found")
+        return
       }
 
       resolve( {
@@ -209,6 +208,7 @@ const StructureA:DatabaseInterface = {
 
       if(q1.empty){
         reject("No survey found")
+        return
       }
 
       const conversations:Conversation[][] = []
@@ -239,6 +239,7 @@ const StructureA:DatabaseInterface = {
 
       if(q1.empty){
         resolve([])
+        return
       }
 
       const conversations:Conversation[][] = []

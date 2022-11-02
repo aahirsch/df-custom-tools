@@ -5,6 +5,7 @@ import { Conversation, DatabaseInterface,Message, Survey } from "./DatabaseInter
 import StructureA from "./StructureA"
 import StructureB from "./StructureB"
 import StructureC from "./StructureC"
+import StructureD from "./StructureD"
 
 
 const admin = require('firebase-admin')
@@ -137,6 +138,28 @@ async function testUploadMessage(structure: DatabaseInterface,topLevelCollection
 
 }
 
+async function testDownloadConversation(structure: DatabaseInterface,topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
+
+  structure.retrieveConversation(testingCollection,"testSurveyId","testAgentId","testResponseId").then((result) => {
+    console.log(`Test retrieving conversation 'testResponseId' from collection '${topLevelCollection}'`)
+    console.log(`using structure ${structure}`)
+    console.log(result)
+  })
+}
+
+async function testDownloadAll(structure: DatabaseInterface,topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
+
+  structure.retrieveConversation(testingCollection,"testSurveyId","testAgentId","testResponseId").then((result) => {
+    console.log(`Test retrieving all from collection '${topLevelCollection}'`)
+    console.log(`using structure ${structure}`)
+    console.log(result)
+  })
+}
+
+
+
 
 
 //testUploadConversation(StructureA,"testing-A")
@@ -145,8 +168,28 @@ async function testUploadMessage(structure: DatabaseInterface,topLevelCollection
 
 //testUploadConversation(StructureC,"testing-C")
 
+//testUploadConversation(StructureD,"testing-D")
+
 //testUploadMessage(StructureA,"testing-A")
 
 //testUploadMessage(StructureB,"testing-B")
 
-testUploadMessage(StructureC,"testing-C")
+//testUploadMessage(StructureC,"testing-C")
+
+//testUploadMessage(StructureD,"testing-D")
+
+testDownloadConversation(StructureA,"testing-A")
+
+testDownloadConversation(StructureB,"testing-B")
+
+testDownloadConversation(StructureC,"testing-C")
+
+testDownloadConversation(StructureD,"testing-D")
+
+testDownloadAll(StructureA,"testing-A")
+
+testDownloadAll(StructureB,"testing-B")
+
+testDownloadAll(StructureC,"testing-C")
+
+testDownloadAll(StructureD,"testing-D")
