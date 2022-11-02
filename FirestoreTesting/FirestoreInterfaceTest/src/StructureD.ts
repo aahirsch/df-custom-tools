@@ -151,7 +151,7 @@ const StructureD:DatabaseInterface = {
 
       q1.forEach( (doc) => {
         const data = doc.data()
-        if (data.responseId in conversationIdMap){
+        if (conversationIdMap.has(data.responseId)){
           //assert that the map has a value for the responseId
           (conversationIdMap.get(data.responseId) as Conversation).messages.push({
             agentId: data.agentId,

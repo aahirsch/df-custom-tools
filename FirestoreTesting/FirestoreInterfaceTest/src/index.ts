@@ -151,7 +151,7 @@ async function testDownloadConversation(structure: DatabaseInterface,topLevelCol
 async function testDownloadAll(structure: DatabaseInterface,topLevelCollection: string) {
   const testingCollection = db.collection(topLevelCollection)
 
-  structure.retrieveConversation(testingCollection,"testSurveyId","testAgentId","testResponseId").then((result) => {
+  structure.retrieveAll(testingCollection).then((result) => {
     console.log(`Test retrieving all from collection '${topLevelCollection}'`)
     console.log(`using structure ${structure}`)
     console.log(result)
@@ -178,18 +178,18 @@ async function testDownloadAll(structure: DatabaseInterface,topLevelCollection: 
 
 //testUploadMessage(StructureD,"testing-D")
 
-testDownloadConversation(StructureA,"testing-A")
+//testDownloadConversation(StructureA,"testing-A")
 
-testDownloadConversation(StructureB,"testing-B")
+//testDownloadConversation(StructureB,"testing-B")
 
-testDownloadConversation(StructureC,"testing-C")
+//testDownloadConversation(StructureC,"testing-C")
 
-testDownloadConversation(StructureD,"testing-D")
+//testDownloadConversation(StructureD,"testing-D")
 
-testDownloadAll(StructureA,"testing-A")
+//testDownloadAll(StructureA,"testing-A")
 
-testDownloadAll(StructureB,"testing-B")
+//testDownloadAll(StructureB,"testing-B")
 
-testDownloadAll(StructureC,"testing-C")
+//testDownloadAll(StructureC,"testing-C")
 
 testDownloadAll(StructureD,"testing-D")

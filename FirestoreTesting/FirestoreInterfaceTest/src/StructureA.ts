@@ -1,4 +1,4 @@
-import {CollectionReference, DocumentReference,QuerySnapshot,DocumentData,Timestamp} from "@google-cloud/firestore"
+import {CollectionReference, DocumentReference,QuerySnapshot,DocumentData,Timestamp, DocumentSnapshot, QueryDocumentSnapshot} from "@google-cloud/firestore"
 
 import { DatabaseInterface,Message,Conversation,Survey } from "./DatabaseInterface"
 
@@ -24,11 +24,11 @@ const readMessagesFromConversation= (conversationDocumentReference:DocumentRefer
   })
 }
 
-const readConversationsFromSurvey = (surveyDocumentReference:DocumentReference):Promise<Conversation[]> => {
+const readConversationsFromSurvey = (surveySnapshot:QueryDocumentSnapshot):Promise<Conversation[]> => {
   return new Promise<Conversation[]>(async (resolve,reject) => {
     const conversations:Conversation[] = []
 
-    const q1=await surveyDocumentReference.collection("conversations").get()
+    const q1=await surveySnapshot.ref.collection("conversations").get()
 
     const myPromises:Promise<void>[] = []
 
@@ -37,8 +37,8 @@ const readConversationsFromSurvey = (surveyDocumentReference:DocumentReference):
       myPromises.push(
         new Promise<void>(async (resolve,reject) => {
           conversations.push({
-            surveyId: data.surveyId,
-            agentId: data.agentId,
+            surveyId: surveySnapshot.data().surveyId,
+            agentId: surveySnapshot.data().agentId,
             responseId: data.responseId,
             messages: await readMessagesFromConversation(doc.ref)
           })
@@ -217,7 +217,7 @@ const StructureA:DatabaseInterface = {
 
       q1.forEach( (doc) => {
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          conversations.push(await readConversationsFromSurvey(doc.ref))
+          conversations.push(await readConversationsFromSurvey(doc))
           resolve()
         }))
         
@@ -248,7 +248,7 @@ const StructureA:DatabaseInterface = {
 
       q1.forEach( (doc) => {
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          conversations.push(await readConversationsFromSurvey(doc.ref))
+          conversations.push(await readConversationsFromSurvey(doc))
           resolve()
         }))
         
@@ -306,7 +306,7 @@ const StructureA:DatabaseInterface = {
 
       q1.forEach( (doc) => {
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          conversations.push(await readConversationsFromSurvey(doc.ref))
+          conversations.push(await readConversationsFromSurvey(doc))
           resolve()
         }))
       }

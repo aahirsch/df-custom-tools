@@ -176,15 +176,15 @@ const StructureC:DatabaseInterface = {
       
       const myPromises:Promise<void>[] = []
 
-      q1.forEach( (doc) => {
+      q1.forEach( (doc1) => {
 
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          const q2 = await doc.ref.collection("conversations").get()
+          const q2 = await doc1.ref.collection("conversations").get()
           
           q2.forEach( (doc2) => {
             conversations.push({
-              surveyId: doc2.data().surveyId,
-              agentId: doc2.data().agentId,
+              surveyId: doc1.data().surveyId,
+              agentId: doc1.data().agentId,
               responseId: doc2.data().responseId,
               messages: doc2.data().messages.map((message:any) => {
                 return {
@@ -225,14 +225,14 @@ const StructureC:DatabaseInterface = {
       
       const myPromises:Promise<void>[] = []
 
-      q1.forEach( (doc) => {
+      q1.forEach( (doc1) => {
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          const q2 = await doc.ref.collection("conversations").get()
+          const q2 = await doc1.ref.collection("conversations").get()
           
           q2.forEach( (doc2) => {
             conversations.push({
-              surveyId: doc2.data().surveyId,
-              agentId: doc2.data().agentId,
+              surveyId: doc1.data().surveyId,
+              agentId: doc1.data().agentId,
               responseId: doc2.data().responseId,
               messages: doc2.data().messages.map((message:any) => {
                 return {
@@ -300,21 +300,26 @@ const StructureC:DatabaseInterface = {
 
       const myPromises:Promise<void>[] = []
 
-      q1.forEach( (doc) => {
+      q1.forEach( (doc1) => {
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          conversations.push({
-            surveyId: doc.data().surveyId,
-            agentId: doc.data().agentId,
-            responseId: doc.data().responseId,
-            messages: doc.data().messages.map((message:any) => {
-              return {
-                input: message.input,
-                output: message.output,
-                parameters: message.parameters,
-                timestamp: (message.timestamp as Timestamp).toDate().toISOString()
-              } as Message
-            })
-          } as Conversation)
+          const q2 = await doc1.ref.collection("conversations").get()          
+
+          q2.forEach( (doc2) => {
+            conversations.push({
+              surveyId: doc2.data().surveyId,
+              agentId: doc2.data().agentId,
+              responseId: doc2.data().responseId,
+              messages: doc2.data().messages.map((message:any) => {
+                return {
+                  input: message.input,
+                  output: message.output,
+                  parameters: message.parameters,
+                  timestamp: (message.timestamp as Timestamp).toDate().toISOString()
+                } as Message
+              })
+            } as Conversation)
+          })
+
           resolve()
         }))
       }
