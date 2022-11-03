@@ -264,7 +264,7 @@ const StructureC:DatabaseInterface = {
       const myPromises:Promise<any>[] = []
 
       q1.forEach( (doc) => {
-        if (!(researcherId in doc.data().authorizedResearcherIds)) {
+        if (!(doc.data().authorizedResearcherIds.includes(researcherId))) {
           myPromises.push(
             doc.ref.update({
               authorizedResearcherIds: doc.data().authorizedResearcherIds.concat(researcherId)
@@ -294,34 +294,40 @@ const StructureC:DatabaseInterface = {
 
   getConversationsBetween: (topLevelCollection:CollectionReference, start: Date, end: Date): Promise<Conversation[]> => {
     return new Promise<Conversation[]>(async (resolve, reject) => {
-      const q1 = await topLevelCollection.where("startDate", ">=", Timestamp.fromDate(start)).where("endDate", "<=", Timestamp.fromDate(end)).get()
+      //because of the limitations of firestore, we can only query with ord on one field at a time (but we can use multiple ords)
+      //this implementation will use one query that overshoots(giving us all surveys after the start) and then filter hose down here
+      //note this may create an undue burden on the client if this code is run client side
+      
+      const q1 = await topLevelCollection.where("startDate", ">=", Timestamp.fromDate(start)).get()
 
       const conversations:Conversation[] = []
 
       const myPromises:Promise<void>[] = []
 
       q1.forEach( (doc1) => {
-        myPromises.push(new Promise<void>(async (resolve, reject) => {
-          const q2 = await doc1.ref.collection("conversations").get()          
+        if(doc1.data().endDate.toDate() <= end){
+          myPromises.push(new Promise<void>(async (resolve, reject) => {
+            const q2 = await doc1.ref.collection("conversations").get()          
 
-          q2.forEach( (doc2) => {
-            conversations.push({
-              surveyId: doc2.data().surveyId,
-              agentId: doc2.data().agentId,
-              responseId: doc2.data().responseId,
-              messages: doc2.data().messages.map((message:any) => {
-                return {
-                  input: message.input,
-                  output: message.output,
-                  parameters: message.parameters,
-                  timestamp: (message.timestamp as Timestamp).toDate().toISOString()
-                } as Message
-              })
-            } as Conversation)
-          })
+            q2.forEach( (doc2) => {
+              conversations.push({
+                surveyId: doc1.data().surveyId,
+                agentId: doc1.data().agentId,
+                responseId: doc2.data().responseId,
+                messages: doc2.data().messages.map((message:any) => {
+                  return {
+                    input: message.input,
+                    output: message.output,
+                    parameters: message.parameters,
+                    timestamp: (message.timestamp as Timestamp).toDate().toISOString()
+                  } as Message
+                })
+              } as Conversation)
+            })
 
-          resolve()
-        }))
+            resolve()
+          }))
+        }
       }
       )
 

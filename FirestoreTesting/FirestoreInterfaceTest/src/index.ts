@@ -158,8 +158,33 @@ async function testDownloadAll(structure: DatabaseInterface,topLevelCollection: 
   })
 }
 
+async function testGiveAccess(structure: DatabaseInterface,topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
 
+  await structure.giveAccessToSurveys(testingCollection,"testResearcher",["testSurveyId"])
+}
 
+async function testCheckAccess(structure:DatabaseInterface, topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
+
+  structure.getAccessibleSurveys(testingCollection,"testResearcher").then((result) => {
+    console.log(`Test retrieving accessible surveys from collection '${topLevelCollection}'`)
+    console.log(`using structure ${structure}`)
+    console.log(result)
+  })
+
+}
+
+async function testGetConversationBetween(structure:DatabaseInterface, topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
+
+  structure.getConversationsBetween(testingCollection,new Date("6/24/20, 4:03 AM"),new Date("6/24/22, 4:06 AM")).then((result) => {
+    console.log(`Test retrieving conversations between from collection '${topLevelCollection}'`)
+    console.log(`using structure ${structure}`)
+    console.log(result)
+  })
+  
+}
 
 
 //testUploadConversation(StructureA,"testing-A")
@@ -192,4 +217,28 @@ async function testDownloadAll(structure: DatabaseInterface,topLevelCollection: 
 
 //testDownloadAll(StructureC,"testing-C")
 
-testDownloadAll(StructureD,"testing-D")
+//testDownloadAll(StructureD,"testing-D")
+
+//testGiveAccess(StructureA,"testing-A")
+
+//testGiveAccess(StructureB,"testing-B")
+
+//testGiveAccess(StructureC,"testing-C")
+
+//testGiveAccess(StructureD,"testing-D")
+
+//testCheckAccess(StructureA,"testing-A")
+
+//testCheckAccess(StructureB,"testing-B")
+
+//testCheckAccess(StructureC,"testing-C")
+
+//testCheckAccess(StructureD,"testing-D")
+
+testGetConversationBetween(StructureA,"testing-A")
+
+testGetConversationBetween(StructureB,"testing-B")
+
+testGetConversationBetween(StructureC,"testing-C")
+
+testGetConversationBetween(StructureD,"testing-D")
