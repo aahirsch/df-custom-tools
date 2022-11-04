@@ -78,9 +78,7 @@ async function getConvoBetween(structure: DatabaseInterface, topLevelCollection:
 
 
 // get data
-let data  = parser('/Users/christophersebastian/Downloads/negbot_testing_q_conv_merge_2022-06-24.xlsx - _merge (1).csv')
-
-
+let data  = parser('dataCSV.xlsx - _merge.csv');
 
 // call tests
 massUpload(StructureA,"testing-A",data);
