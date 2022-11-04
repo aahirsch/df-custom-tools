@@ -151,7 +151,7 @@ const StructureD:DatabaseInterface = {
 
       q1.forEach( (doc) => {
         const data = doc.data()
-        if (data.responseId in conversationIdMap){
+        if (conversationIdMap.has(data.responseId)){
           //assert that the map has a value for the responseId
           (conversationIdMap.get(data.responseId) as Conversation).messages.push({
             agentId: data.agentId,
@@ -193,7 +193,7 @@ const StructureD:DatabaseInterface = {
       const myPromises:Promise<any>[] = []
 
       q1.forEach( (doc) => {
-        if (!(researcherId in doc.data().authorizedResearcherIds)) {
+        if (!(doc.data().authorizedResearcherIds.includes(researcherId))) {
           myPromises.push(
             doc.ref.update({
               authorizedResearcherIds: doc.data().authorizedResearcherIds.concat(researcherId)
@@ -214,7 +214,7 @@ const StructureD:DatabaseInterface = {
       const surveyIds:string[] = []
 
       q1.forEach( (doc) => {
-        if (!(doc.data().surveyId in surveyIds)) {  
+        if (!(surveyIds.includes(doc.data().surveyId))) {  
           surveyIds.push(doc.data().surveyId)
         }
       })
@@ -226,8 +226,10 @@ const StructureD:DatabaseInterface = {
   //NOTE the functionality of this is not perfect, it will return all messges between the start and end organized into conversations
   //If a conversation contains messages that span the date range, it will be returned missing the messages that are outside the range
   getConversationsBetween: (topLevelCollection:CollectionReference, start: Date, end: Date): Promise<Conversation[]> => {
+
     return new Promise<Conversation[]>(async (resolve, reject) => {
-      const q1 = await topLevelCollection.where("startDate", ">=", Timestamp.fromDate(start)).where("endDate", "<=", Timestamp.fromDate(end)).get()
+      const q1 = await topLevelCollection.where("timestamp", ">=", Timestamp.fromDate(start))
+      .where("timestamp","<=",Timestamp.fromDate(end)).get()
 
       const conversations:Conversation[] = []
 
@@ -235,7 +237,7 @@ const StructureD:DatabaseInterface = {
 
       q1.forEach( (doc) => {
         const data = doc.data()
-        if (data.responseId in conversationIdMap){
+        if (conversationIdMap.has(data.responseId)){
           //assert that the map has a value for the responseId
           (conversationIdMap.get(data.responseId) as Conversation).messages.push({
             agentId: data.agentId,

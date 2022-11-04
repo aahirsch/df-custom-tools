@@ -151,15 +151,40 @@ async function testDownloadConversation(structure: DatabaseInterface,topLevelCol
 async function testDownloadAll(structure: DatabaseInterface,topLevelCollection: string) {
   const testingCollection = db.collection(topLevelCollection)
 
-  structure.retrieveConversation(testingCollection,"testSurveyId","testAgentId","testResponseId").then((result) => {
+  structure.retrieveAll(testingCollection).then((result) => {
     console.log(`Test retrieving all from collection '${topLevelCollection}'`)
     console.log(`using structure ${structure}`)
     console.log(result)
   })
 }
 
+async function testGiveAccess(structure: DatabaseInterface,topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
 
+  await structure.giveAccessToSurveys(testingCollection,"testResearcher",["testSurveyId"])
+}
 
+async function testCheckAccess(structure:DatabaseInterface, topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
+
+  structure.getAccessibleSurveys(testingCollection,"testResearcher").then((result) => {
+    console.log(`Test retrieving accessible surveys from collection '${topLevelCollection}'`)
+    console.log(`using structure ${structure}`)
+    console.log(result)
+  })
+
+}
+
+async function testGetConversationBetween(structure:DatabaseInterface, topLevelCollection: string) {
+  const testingCollection = db.collection(topLevelCollection)
+
+  structure.getConversationsBetween(testingCollection,new Date("6/24/20, 4:03 AM"),new Date("6/24/22, 4:06 AM")).then((result) => {
+    console.log(`Test retrieving conversations between from collection '${topLevelCollection}'`)
+    console.log(`using structure ${structure}`)
+    console.log(result)
+  })
+  
+}
 
 
 //testUploadConversation(StructureA,"testing-A")
@@ -178,18 +203,42 @@ async function testDownloadAll(structure: DatabaseInterface,topLevelCollection: 
 
 //testUploadMessage(StructureD,"testing-D")
 
-testDownloadConversation(StructureA,"testing-A")
+//testDownloadConversation(StructureA,"testing-A")
 
-testDownloadConversation(StructureB,"testing-B")
+//testDownloadConversation(StructureB,"testing-B")
 
-testDownloadConversation(StructureC,"testing-C")
+//testDownloadConversation(StructureC,"testing-C")
 
-testDownloadConversation(StructureD,"testing-D")
+//testDownloadConversation(StructureD,"testing-D")
 
-testDownloadAll(StructureA,"testing-A")
+//testDownloadAll(StructureA,"testing-A")
 
-testDownloadAll(StructureB,"testing-B")
+//testDownloadAll(StructureB,"testing-B")
 
-testDownloadAll(StructureC,"testing-C")
+//testDownloadAll(StructureC,"testing-C")
 
-testDownloadAll(StructureD,"testing-D")
+//testDownloadAll(StructureD,"testing-D")
+
+//testGiveAccess(StructureA,"testing-A")
+
+//testGiveAccess(StructureB,"testing-B")
+
+//testGiveAccess(StructureC,"testing-C")
+
+//testGiveAccess(StructureD,"testing-D")
+
+//testCheckAccess(StructureA,"testing-A")
+
+//testCheckAccess(StructureB,"testing-B")
+
+//testCheckAccess(StructureC,"testing-C")
+
+//testCheckAccess(StructureD,"testing-D")
+
+testGetConversationBetween(StructureA,"testing-A")
+
+testGetConversationBetween(StructureB,"testing-B")
+
+testGetConversationBetween(StructureC,"testing-C")
+
+testGetConversationBetween(StructureD,"testing-D")

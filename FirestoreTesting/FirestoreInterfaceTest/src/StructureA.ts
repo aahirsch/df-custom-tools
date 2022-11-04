@@ -1,4 +1,4 @@
-import {CollectionReference, DocumentReference,QuerySnapshot,DocumentData,Timestamp} from "@google-cloud/firestore"
+import {CollectionReference, DocumentReference,QuerySnapshot,DocumentData,Timestamp, DocumentSnapshot, QueryDocumentSnapshot} from "@google-cloud/firestore"
 
 import { DatabaseInterface,Message,Conversation,Survey } from "./DatabaseInterface"
 
@@ -24,11 +24,11 @@ const readMessagesFromConversation= (conversationDocumentReference:DocumentRefer
   })
 }
 
-const readConversationsFromSurvey = (surveyDocumentReference:DocumentReference):Promise<Conversation[]> => {
+const readConversationsFromSurvey = (surveySnapshot:QueryDocumentSnapshot):Promise<Conversation[]> => {
   return new Promise<Conversation[]>(async (resolve,reject) => {
     const conversations:Conversation[] = []
 
-    const q1=await surveyDocumentReference.collection("conversations").get()
+    const q1=await surveySnapshot.ref.collection("conversations").get()
 
     const myPromises:Promise<void>[] = []
 
@@ -37,8 +37,8 @@ const readConversationsFromSurvey = (surveyDocumentReference:DocumentReference):
       myPromises.push(
         new Promise<void>(async (resolve,reject) => {
           conversations.push({
-            surveyId: data.surveyId,
-            agentId: data.agentId,
+            surveyId: surveySnapshot.data().surveyId,
+            agentId: surveySnapshot.data().agentId,
             responseId: data.responseId,
             messages: await readMessagesFromConversation(doc.ref)
           })
@@ -217,7 +217,7 @@ const StructureA:DatabaseInterface = {
 
       q1.forEach( (doc) => {
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          conversations.push(await readConversationsFromSurvey(doc.ref))
+          conversations.push(await readConversationsFromSurvey(doc))
           resolve()
         }))
         
@@ -248,7 +248,7 @@ const StructureA:DatabaseInterface = {
 
       q1.forEach( (doc) => {
         myPromises.push(new Promise<void>(async (resolve, reject) => {
-          conversations.push(await readConversationsFromSurvey(doc.ref))
+          conversations.push(await readConversationsFromSurvey(doc))
           resolve()
         }))
         
@@ -268,7 +268,7 @@ const StructureA:DatabaseInterface = {
       const myPromises:Promise<any>[] = []
 
       q1.forEach( (doc) => {
-        if (!(researcherId in doc.data().authorizedResearcherIds)) {
+        if (!(doc.data().authorizedResearcherIds.includes(researcherId))) {
           myPromises.push(
             doc.ref.update({
               authorizedResearcherIds: doc.data().authorizedResearcherIds.concat(researcherId)
@@ -298,19 +298,25 @@ const StructureA:DatabaseInterface = {
 
   getConversationsBetween: (topLevelCollection:CollectionReference, start: Date, end: Date): Promise<Conversation[]> => {
     return new Promise<Conversation[]>(async (resolve, reject) => {
-      const q1 = await topLevelCollection.where("startDate", ">=", Timestamp.fromDate(start)).where("endDate", "<=", Timestamp.fromDate(end)).get()
+      //because of the limitations of firestore, we can only query with ord on one field at a time (but we can use multiple ords)
+      //this implementation will use one query that overshoots(giving us all surveys after the start) and then filter hose down here
+      //NOTE this may create an undue burden on the client if this code is run client side
+      const q1 = await topLevelCollection.where("startDate", ">=", Timestamp.fromDate(start)).get()
+      
+      //.where("endDate", "<=", Timestamp.fromDate(end)).get()
 
       const conversations:Conversation[][] = []
 
       const myPromises:Promise<void>[] = []
 
       q1.forEach( (doc) => {
-        myPromises.push(new Promise<void>(async (resolve, reject) => {
-          conversations.push(await readConversationsFromSurvey(doc.ref))
-          resolve()
-        }))
-      }
-      )
+        if(doc.data().endDate.toDate() <= end){
+          myPromises.push(new Promise<void>(async (resolve, reject) => {
+            conversations.push(await readConversationsFromSurvey(doc))
+            resolve()
+          }))
+        }
+      })
 
       await Promise.all(myPromises)
 
