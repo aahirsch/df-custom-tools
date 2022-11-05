@@ -235,10 +235,10 @@ async function testGetConversationBetween(structure:DatabaseInterface, topLevelC
 
 //testCheckAccess(StructureD,"testing-D")
 
-testGetConversationBetween(StructureA,"testing-A")
+//testGetConversationBetween(StructureA,"testing-A")
 
-testGetConversationBetween(StructureB,"testing-B")
+//testGetConversationBetween(StructureB,"testing-B")
 
-testGetConversationBetween(StructureC,"testing-C")
+//testGetConversationBetween(StructureC,"testing-C")
 
-testGetConversationBetween(StructureD,"testing-D")
+//testGetConversationBetween(StructureD,"testing-D")

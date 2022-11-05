@@ -130,6 +130,13 @@
     read-pkg-up "^7.0.1"
     semver "^7.3.5"
 
+"@google-cloud/monitoring@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@google-cloud/monitoring/-/monitoring-3.0.2.tgz#782cfcf6e5fcfafd6522f52788185cc9fc35c984"
+  integrity sha512-wRdwqEEp/Kho8tk69SJYap0kc4biA0wCjQujdCQYuRjFCQ7LPhTPA25/NPPem+UATXYkVsRNiCG3t52f75fqdg==
+  dependencies:
+    google-gax "^3.3.0"
+
 "@google-cloud/paginator@^3.0.7":
   version "3.0.7"
   resolved "https://registry.yarnpkg.com/@google-cloud/paginator/-/paginator-3.0.7.tgz#fb6f8e24ec841f99defaebf62c75c2e744dd419b"
@@ -1120,7 +1127,7 @@ google-auth-library@^8.0.1, google-auth-library@^8.0.2:
     jws "^4.0.0"
     lru-cache "^6.0.0"
 
-google-gax@^3.5.1:
+google-gax@^3.3.0, google-gax@^3.5.1:
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/google-gax/-/google-gax-3.5.2.tgz#7c3ad61dbf366a55527b803caead276668b160d8"
   integrity sha512-AyP53w0gHcWlzxm+jSgqCR3Xu4Ld7EpSjhtNBnNhzwwWaIUyphH9kBGNIEH+i4UGkTUXOY29K/Re8EiAvkBRGw==
