@@ -41,20 +41,6 @@ async function getWrites(token:string, seconds:number): Promise<[number,number]>
   }) 
 }
 
-async function metricWrapper(fun: () => Promise<any>): Promise<[number,number,number,number]>{
-  const token:string=await getNewToken()
-  return new Promise(async (resolve, reject) => {
-    const start = new Date()
-    fun().then(async () => {
-      const end = new Date()
-      const seconds = (end.getTime() - start.getTime())/1000
-      const [lookupReads, queryReads] = await getReads(token, seconds)
-      const [updateWrites, createWrites] = await getWrites(token, seconds)
-      resolve([lookupReads, queryReads, updateWrites, createWrites])
-    })
-  })
-}
-
 async function getNewToken(): Promise<string>{
   return new Promise((resolve, reject) => {
     exec(`gcloud auth print-access-token firebase-adminsdk-dgjo6@heartschat-prod-a505.iam.gserviceaccount.com --scopes "https://www.googleapis.com/auth/monitoring"`,
@@ -65,6 +51,21 @@ async function getNewToken(): Promise<string>{
           resolve(stdout.slice(0,236))
         }
       })
+  })
+}
+
+async function metricWrapper(fun: () => Promise<any>): Promise<[number,number,number,number]>{
+  const token:string=await getNewToken()
+  return new Promise(async (resolve, reject) => {
+    const start = new Date()
+    fun().then( async () => setTimeout(
+      async () => {
+        const end = new Date()
+        const seconds = (end.getTime() - start.getTime())/1000
+        const [lookupReads, queryReads] = await getReads(token, seconds)
+        const [updateWrites, createWrites] = await getWrites(token, seconds)
+        resolve([lookupReads, queryReads, updateWrites, createWrites])
+    },60*4*1000))
   })
 }
 
