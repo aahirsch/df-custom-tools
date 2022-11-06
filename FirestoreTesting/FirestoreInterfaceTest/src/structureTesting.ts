@@ -90,9 +90,9 @@ async function testUploadConversation(structure: DatabaseInterface,topLevelColle
   const testingCollection = db.collection(topLevelCollection)
 
   const testConversation:Conversation = {
-    surveyId: "testSurveyId",
-    agentId: "testAgentId",
-    responseId: "testResponseId",
+    surveyId: "testSurveyId1",
+    agentId: "testAgentId11",
+    responseId: "testResponseId1",
     messages: [
       {
         input: "testInput1",
@@ -189,7 +189,7 @@ async function testGetConversationBetween(structure:DatabaseInterface, topLevelC
 
 //testUploadConversation(StructureA,"testing-A")
 
-//testUploadConversation(StructureB,"testing-B")
+testUploadConversation(StructureB,"testing-B")
 
 //testUploadConversation(StructureC,"testing-C")
 
