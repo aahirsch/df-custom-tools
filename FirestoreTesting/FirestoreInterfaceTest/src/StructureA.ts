@@ -87,7 +87,7 @@ const StructureA:DatabaseInterface = {
         })
         : q2.docs[0].ref
 
-      myDoc2.collection("messages").add(
+      await myDoc2.collection("messages").add(
         {
           input: message.input,
           output: message.output,
@@ -142,13 +142,20 @@ const StructureA:DatabaseInterface = {
           responseId: conversation.responseId
         })
 
+      const myPromises:Promise<void>[] = []
+
       conversation.messages.forEach(async (message) => {
-      myDoc2.collection("messages").add(
-        {
-          input: message.input,
-          output: message.output,
-          parameters: message.parameters,
-          timestamp: Timestamp.fromDate(new Date(message.timestamp))})
+        myPromises.push(new Promise<void>(async (res,rej) => {
+          await myDoc2.collection("messages").add(
+          {
+            input: message.input,
+            output: message.output,
+            parameters: message.parameters,
+            timestamp: Timestamp.fromDate(new Date(message.timestamp))
+          })
+          res()
+        }))
+      
       })
 
       //check if the startDate or endDate need to be updated
@@ -167,6 +174,7 @@ const StructureA:DatabaseInterface = {
         //by the nature of the data, it is very unlikely that the startDate or endDate will need to be updated
         //this is because that would apply that this conversation spanned over all the other conversations in the survey
       }
+      await Promise.all(myPromises)
 
       resolve()
 

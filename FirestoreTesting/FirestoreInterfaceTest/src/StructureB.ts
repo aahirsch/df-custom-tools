@@ -50,7 +50,7 @@ const StructureB:DatabaseInterface = {
           })
           : q1.docs[0].ref
 
-      myDoc1.collection("messages").add(
+      await myDoc1.collection("messages").add(
         {
           input: message.input,
           output: message.output,
@@ -98,7 +98,7 @@ const StructureB:DatabaseInterface = {
 
       conversation.messages.forEach(async (message) => {
         const messageTimestamp:Timestamp = Timestamp.fromDate(new Date(message.timestamp))
-        myPromises.push(myDoc1.collection("messages").add(
+        await myPromises.push(myDoc1.collection("messages").add(
           {
             input: message.input,
             output: message.output,

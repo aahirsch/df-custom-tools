@@ -1,0 +1,1 @@
+{"query": "fetch firestore_instance::firestore.googleapis.com/document/write_count | delta 10h"}
