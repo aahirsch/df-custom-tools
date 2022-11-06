@@ -1,3 +1,4 @@
+import internal from "stream";
 import  {Message} from "./DatabaseInterface"
 declare var require: any
 
@@ -67,7 +68,8 @@ export const parser = (filepath: string) => {
     for(var i=1; i < arr.length; i++){
         var data = csvToArray(arr[i]);
         const object: {[index: string]:any} = {} as Message;
-        var parameters: {[index: string]:any} = {};
+        const paramters: {[index: string]:any} = {};
+        let offers: string[] = [];
         for(var j=0;j < data[0].length;j++){
           if (typeof headerMaps.get(toplevelHeaders[j]) != 'undefined'){
               var filler : string = headerMaps.get(toplevelHeaders[j]);
@@ -75,16 +77,15 @@ export const parser = (filepath: string) => {
           }
           if (paraDef.includes(toplevelHeaders[j])){
               var placeHolder : string = toplevelHeaders[j];
-              parameters[placeHolder] = data[0][j];
+              offers.push(data[0][j]);
           }
         }
-        object['parameters'] = parameters;
+        paramters['offers'] = offers;
+        object['parameters'] = paramters;
         jsonObject.push(object)
       }
       return jsonObject
 }
-
-
 
 
 
