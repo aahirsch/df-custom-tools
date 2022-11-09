@@ -2,17 +2,21 @@ import {Firestore,DocumentData} from "@google-cloud/firestore"
 
 import { Conversation, DatabaseInterface,Message, Survey } from "./DatabaseInterface"
 
+import metricWrapper from "./Monitoring"
+
 import StructureA from "./StructureA"
 import StructureB from "./StructureB"
 import StructureC from "./StructureC"
 import StructureD from "./StructureD"
 
 
-const admin = require('firebase-admin')
+import admin from "firebase-admin"
 
 let credentialsLocation = "../heartschat-prod-creds.json"
 
-let credentials = require(credentialsLocation)
+import fs from "fs"
+
+const credentials = JSON.parse(fs.readFileSync("./heartschat-prod-creds.json","utf-8"))
 
 admin.initializeApp({
   credential: admin.credential.cert(credentials)
@@ -187,9 +191,9 @@ async function testGetConversationBetween(structure:DatabaseInterface, topLevelC
 }
 
 
-//testUploadConversation(StructureA,"testing-A")
+//(async ()=>console.log(await metricWrapper( async () => await testUploadConversation(StructureA,"testing-A"))))()
 
-testUploadConversation(StructureB,"testing-B")
+(async () => console.log(await metricWrapper (async () => await testUploadConversation(StructureB,"testing-B"))))()
 
 //testUploadConversation(StructureC,"testing-C")
 
@@ -211,7 +215,7 @@ testUploadConversation(StructureB,"testing-B")
 
 //testDownloadConversation(StructureD,"testing-D")
 
-//testDownloadAll(StructureA,"testing-A")
+//(async ()=>console.log(await metricWrapper( async ()=>await testDownloadAll(StructureA,"testing-A"))))()
 
 //testDownloadAll(StructureB,"testing-B")
 

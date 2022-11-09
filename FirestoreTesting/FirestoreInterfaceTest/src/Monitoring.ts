@@ -1,4 +1,4 @@
-import fetch from "node-fetch"
+import fetch from "node-fetch-commonjs"
 
 import {exec} from "child_process"
 
@@ -9,7 +9,7 @@ async function makeQuery(query:string, token:string): Promise<any>{
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `bearer ${token}`
+      "Authorization": `Bearer ${token}`
     },
     body: `{"query": "${query}"}`
   })
@@ -23,8 +23,27 @@ async function getReads(token:string, seconds:number): Promise<[number,number]>{
     const query = `fetch firestore_instance::firestore.googleapis.com/document/read_count | delta ${seconds}s`
 
     const data = await makeQuery(query, token)
+    //timeSeriesData is empty if there are no reads
+    var lookupReads = 0
+    var queryReads = 0
 
-    resolve([data.timeSeriesData[0].pointData[0].values[0].int64Value, data.timeSeriesData[1].pointData[0].values[0].int64Value])
+    if(data.timeSeriesData==undefined){
+      resolve([0,0])
+      return
+    }
+
+    const dataPoints=data.timeSeriesData.length
+    for(var i=0;i<dataPoints;i++){
+      if(data.timeSeriesData[i].labelValues[2].stringValue=="LOOKUP"){
+        lookupReads = parseInt(data.timeSeriesData[i].pointData[0].values[0].int64Value)
+      }
+      if(data.timeSeriesData[i].labelValues[2].stringValue=="QUERY"){
+        queryReads = parseInt(data.timeSeriesData[i].pointData[0].values[0].int64Value)
+      }
+    }
+     
+    //resolve([data.timeSeriesData[0].pointData[0].values[0].int64Value, data.timeSeriesData[1].pointData[0].values[0].int64Value])
+    resolve([lookupReads, queryReads])
 
   }) 
 }
@@ -36,8 +55,28 @@ async function getWrites(token:string, seconds:number): Promise<[number,number]>
 
     const data = await makeQuery(query, token)
 
-    resolve([data.timeSeriesData[0].pointData[0].values[0].int64Value, data.timeSeriesData[1].pointData[0].values[0].int64Value])
+    var updateWrites:number = 0
+    var createWrites:number = 0
 
+    if(data.timeSeriesData==undefined){
+      resolve([0,0])
+      return
+    }
+
+    const dataPoints=data.timeSeriesData.length
+
+
+    for(var i=0;i<dataPoints;i++){
+      if(data.timeSeriesData[i].labelValues[2].stringValue=="UPDATE"){
+        updateWrites = parseInt(data.timeSeriesData[i].pointData[0].values[0].int64Value)
+      }
+      if(data.timeSeriesData[i].labelValues[2].stringValue=="CREATE"){
+        createWrites = parseInt(data.timeSeriesData[i].pointData[0].values[0].int64Value)
+      }
+    }
+
+    //resolve([data.timeSeriesData[0].pointData[0].values[0].int64Value, data.timeSeriesData[1].pointData[0].values[0].int64Value])
+    resolve([updateWrites, createWrites])
   }) 
 }
 
@@ -61,7 +100,7 @@ async function metricWrapper(fun: () => Promise<any>): Promise<[number,number,nu
     fun().then( async () => setTimeout(
       async () => {
         const end = new Date()
-        const seconds = (end.getTime() - start.getTime())/1000
+        const seconds = Math.ceil((end.getTime() - start.getTime())/1000)
         const [lookupReads, queryReads] = await getReads(token, seconds)
         const [updateWrites, createWrites] = await getWrites(token, seconds)
         resolve([lookupReads, queryReads, updateWrites, createWrites])
