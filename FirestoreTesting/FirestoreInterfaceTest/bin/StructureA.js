@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,8 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-const firestore_1 = require("@google-cloud/firestore");
+import { Timestamp } from "@google-cloud/firestore";
 const readMessagesFromConversation = (conversationDocumentReference) => {
     return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
         const messages = [];
@@ -17,9 +15,6 @@ const readMessagesFromConversation = (conversationDocumentReference) => {
         q1.forEach((doc) => {
             const data = doc.data();
             messages.push({
-                surveyId: data.surveyId,
-                agentId: data.agentId,
-                responseId: data.responseId,
                 input: data.input,
                 output: data.output,
                 parameters: data.parameters,
@@ -29,17 +24,17 @@ const readMessagesFromConversation = (conversationDocumentReference) => {
         resolve(messages);
     }));
 };
-const readConversationsFromSurvey = (surveyDocumentReference) => {
+const readConversationsFromSurvey = (surveySnapshot) => {
     return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
         const conversations = [];
-        const q1 = yield surveyDocumentReference.collection("conversations").get();
+        const q1 = yield surveySnapshot.ref.collection("conversations").get();
         const myPromises = [];
         q1.forEach((doc) => {
             const data = doc.data();
             myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
                 conversations.push({
-                    surveyId: data.surveyId,
-                    agentId: data.agentId,
+                    surveyId: surveySnapshot.data().surveyId,
+                    agentId: surveySnapshot.data().agentId,
                     responseId: data.responseId,
                     messages: yield readMessagesFromConversation(doc.ref)
                 });
@@ -54,7 +49,7 @@ const readConversationsFromSurvey = (surveyDocumentReference) => {
 const StructureA = {
     insertMessage: (topLevelCollection, message) => {
         return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-            const messageTimestamp = firestore_1.Timestamp.fromDate(new Date(message.timestamp));
+            const messageTimestamp = Timestamp.fromDate(new Date(message.timestamp));
             const q1 = yield topLevelCollection.where("surveyId", "==", message.surveyId)
                 .where("agentId", "==", message.agentId)
                 .limit(1)
@@ -74,7 +69,7 @@ const StructureA = {
                     responseId: message.responseId
                 })
                 : q2.docs[0].ref;
-            myDoc2.collection("messages").add({
+            yield myDoc2.collection("messages").add({
                 input: message.input,
                 output: message.output,
                 parameters: message.parameters,
@@ -84,12 +79,12 @@ const StructureA = {
             if (!q1.empty) {
                 const doc1 = q1.docs[0].data();
                 if (doc1.startDate > messageTimestamp) {
-                    myDoc1.update({
+                    yield myDoc1.update({
                         startDate: messageTimestamp
                     });
                 }
                 if (doc1.endDate < messageTimestamp) {
-                    myDoc1.update({
+                    yield myDoc1.update({
                         endDate: messageTimestamp
                     });
                 }
@@ -104,8 +99,8 @@ const StructureA = {
                 .where("agentId", "==", conversation.agentId)
                 .limit(1)
                 .get();
-            const conversationStartDate = firestore_1.Timestamp.fromDate(new Date(conversation.messages[0].timestamp));
-            const conversationEndDate = firestore_1.Timestamp.fromDate(new Date(conversation.messages[conversation.messages.length - 1].timestamp));
+            const conversationStartDate = Timestamp.fromDate(new Date(conversation.messages[0].timestamp));
+            const conversationEndDate = Timestamp.fromDate(new Date(conversation.messages[conversation.messages.length - 1].timestamp));
             const myDoc1 = q1.empty ?
                 yield topLevelCollection.add({
                     surveyId: conversation.surveyId,
@@ -118,30 +113,35 @@ const StructureA = {
             const myDoc2 = yield myDoc1.collection("conversations").add({
                 responseId: conversation.responseId
             });
+            const myPromises = [];
             conversation.messages.forEach((message) => __awaiter(void 0, void 0, void 0, function* () {
-                myDoc2.collection("messages").add({
-                    input: message.input,
-                    output: message.output,
-                    parameters: message.parameters,
-                    timestamp: firestore_1.Timestamp.fromDate(new Date(message.timestamp))
-                });
+                myPromises.push(new Promise((res, rej) => __awaiter(void 0, void 0, void 0, function* () {
+                    yield myDoc2.collection("messages").add({
+                        input: message.input,
+                        output: message.output,
+                        parameters: message.parameters,
+                        timestamp: Timestamp.fromDate(new Date(message.timestamp))
+                    });
+                    res();
+                })));
             }));
             //check if the startDate or endDate need to be updated
             if (!q1.empty) {
                 const doc1 = q1.docs[0].data();
                 if (doc1.startDate > conversationStartDate) {
-                    myDoc1.update({
+                    yield myDoc1.update({
                         startDate: conversationStartDate
                     });
                 }
                 if (doc1.endDate < conversationEndDate) {
-                    myDoc1.update({
+                    yield myDoc1.update({
                         endDate: conversationEndDate
                     });
                 }
                 //by the nature of the data, it is very unlikely that the startDate or endDate will need to be updated
                 //this is because that would apply that this conversation spanned over all the other conversations in the survey
             }
+            yield Promise.all(myPromises);
             resolve();
         }));
     },
@@ -153,10 +153,12 @@ const StructureA = {
                 .get();
             if (q1.empty) {
                 reject("No conversation found");
+                return;
             }
             const q2 = yield q1.docs[0].ref.collection("conversations").where("responseId", "==", responseId).limit(1).get();
             if (q2.empty) {
                 reject("No conversation found");
+                return;
             }
             resolve({
                 surveyId: surveyId,
@@ -171,12 +173,13 @@ const StructureA = {
             const q1 = yield topLevelCollection.where("surveyId", "==", surveyId).get();
             if (q1.empty) {
                 reject("No survey found");
+                return;
             }
             const conversations = [];
             const myPromises = [];
             q1.forEach((doc) => {
                 myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                    conversations.push(yield readConversationsFromSurvey(doc.ref));
+                    conversations.push(yield readConversationsFromSurvey(doc));
                     resolve();
                 })));
             });
@@ -192,12 +195,13 @@ const StructureA = {
             const q1 = yield topLevelCollection.get();
             if (q1.empty) {
                 resolve([]);
+                return;
             }
             const conversations = [];
             const myPromises = [];
             q1.forEach((doc) => {
                 myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                    conversations.push(yield readConversationsFromSurvey(doc.ref));
+                    conversations.push(yield readConversationsFromSurvey(doc));
                     resolve();
                 })));
             });
@@ -210,7 +214,7 @@ const StructureA = {
             const q1 = yield topLevelCollection.where("surveyId", "in", surveyIds).get();
             const myPromises = [];
             q1.forEach((doc) => {
-                if (!(researcherId in doc.data().authorizedResearcherIds)) {
+                if (!(doc.data().authorizedResearcherIds.includes(researcherId))) {
                     myPromises.push(doc.ref.update({
                         authorizedResearcherIds: doc.data().authorizedResearcherIds.concat(researcherId)
                     }));
@@ -224,30 +228,32 @@ const StructureA = {
         return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
             const q1 = yield topLevelCollection.where("authorizedResearcherIds", "array-contains", researcherId).get();
             const surveyIds = [];
-            const myPromises = [];
             q1.forEach((doc) => {
-                myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                    surveyIds.push(doc.data().surveyId);
-                    resolve();
-                })));
+                surveyIds.push(doc.data().surveyId);
             });
             resolve(surveyIds);
         }));
     },
     getConversationsBetween: (topLevelCollection, start, end) => {
         return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-            const q1 = yield topLevelCollection.where("startDate", ">=", firestore_1.Timestamp.fromDate(start)).where("endDate", "<=", firestore_1.Timestamp.fromDate(end)).get();
+            //because of the limitations of firestore, we can only query with ord on one field at a time (but we can use multiple ords)
+            //this implementation will use one query that overshoots(giving us all surveys after the start) and then filter hose down here
+            //NOTE this may create an undue burden on the client if this code is run client side
+            const q1 = yield topLevelCollection.where("startDate", ">=", Timestamp.fromDate(start)).get();
+            //.where("endDate", "<=", Timestamp.fromDate(end)).get()
             const conversations = [];
             const myPromises = [];
             q1.forEach((doc) => {
-                myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                    conversations.push(yield readConversationsFromSurvey(doc.ref));
-                    resolve();
-                })));
+                if (doc.data().endDate.toDate() <= end) {
+                    myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
+                        conversations.push(yield readConversationsFromSurvey(doc));
+                        resolve();
+                    })));
+                }
             });
             yield Promise.all(myPromises);
             resolve(conversations.flat());
         }));
     }
 };
-exports.default = StructureA;
+export default StructureA;

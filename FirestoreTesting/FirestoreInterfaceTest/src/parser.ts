@@ -1,6 +1,7 @@
 import internal from "stream";
-import  {Message} from "./DatabaseInterface"
-declare var require: any
+import  {Message} from "./DatabaseInterface.js"
+import fs from "fs"
+
 
 
 // function CSVtoArray(text : string) : string[]{
@@ -44,7 +45,7 @@ function csvToArray(text:string) {
 
 
 export const parser = (filepath: string) => {
-    const fs  = require('fs')
+    
     const csvfile = fs.readFileSync(filepath)
     const arr = csvfile.toString().split("\n")
 
@@ -86,6 +87,13 @@ export const parser = (filepath: string) => {
       }
       return jsonObject
 }
+
+let data  = parser('/Users/christophersebastian/df-custom/df-custom-tools/dataCSV.xlsx - _merge.csv');
+
+for(let i= 0; i < 5; i++){
+    console.log(data[i]);
+}
+
 
 
 

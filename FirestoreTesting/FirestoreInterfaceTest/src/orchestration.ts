@@ -1,26 +1,34 @@
-// imports
 import {Firestore,DocumentData} from "@google-cloud/firestore"
+import { DatabaseInterface,Message, Survey, Conversation } from "./DatabaseInterface.js"
 
-import { DatabaseInterface,Message, Survey, Conversation } from "./DatabaseInterface"
+import {parser} from "./parser.js"
 
-import {parser} from "./parser"
+import metricWrapper from "./Monitoring.js"
 
-import {conversion} from "./conversion"
+import {conversion} from "./conversion.js"
 
-import StructureA from "./StructureA"
-import StructureB from "./StructureB"
-import StructureC from "./StructureC"
-import StructureD from "./StructureD"
+import StructureA from "./StructureA.js"
+import StructureB from "./StructureB.js"
+import StructureC from "./StructureC.js"
+import StructureD from "./StructureD.js"
+
+
 
 
 
 // intializing stuff
 declare var require: any
-const admin = require('firebase-admin')
 
 let credentialsLocation = "/Users/christophersebastian/Downloads/heartschat-prod-a505-firebase-adminsdk-dgjo6-35494c7d54.json"
 
-let credentials = require(credentialsLocation)
+
+import admin from 'firebase-admin'
+
+
+import fs from "fs"
+
+const credentials = JSON.parse(fs.readFileSync(credentialsLocation,"utf-8"))
+
 
 admin.initializeApp({
   credential: admin.credential.cert(credentials)
@@ -100,7 +108,7 @@ async function getConvoBetween(structure: DatabaseInterface, topLevelCollection:
 
 
 // get data
-let data  = parser('dataCSV.xlsx - _merge.csv');
+let data  = parser('/Users/christophersebastian/df-custom/df-custom-tools/dataCSV.xlsx - _merge.csv');
   // massUpload(StructureA,"officalTest",data);
   // massConvoUpload(StructureA,"officalTest",data);
   // retriveConvo(StructureA,"officalTest", data[0].surveyId as string, data[0].agentId as string, data[0].responseId as string);
@@ -123,15 +131,4 @@ async function centralizedWrites(structure: DatabaseInterface, topLevelCollectio
   await getConvoBetween(structure,topLevelCollection, new Date(data[0].timestamp as string), new Date(data[1].timestamp as string));
 }
 
-
-
-
-centralizedWrites(StructureB, "officalTest");
-
-
-
-
-
-
-
-
+centralizedWrites(StructureA, "officalTest");

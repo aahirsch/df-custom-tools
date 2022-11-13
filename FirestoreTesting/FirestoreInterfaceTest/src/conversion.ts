@@ -1,4 +1,4 @@
-import  {Conversation} from "./DatabaseInterface"
+import  {Conversation} from "./DatabaseInterface.js"
 
 declare var require: any
 
