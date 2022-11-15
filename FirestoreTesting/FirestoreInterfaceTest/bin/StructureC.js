@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,15 +7,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-const firestore_1 = require("@google-cloud/firestore");
-const readMessagesFromConversation = (conversationDocumentReference) => {
-    return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () { }));
-};
+import { Timestamp } from "@google-cloud/firestore";
 const StructureC = {
     insertMessage: (topLevelCollection, message) => {
         return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-            const messageTimestamp = firestore_1.Timestamp.fromDate(new Date(message.timestamp));
+            const messageTimestamp = Timestamp.fromDate(new Date(message.timestamp));
             const q1 = yield topLevelCollection.where("surveyId", "==", message.surveyId)
                 .where("agentId", "==", message.agentId)
                 .limit(1)
@@ -56,12 +51,12 @@ const StructureC = {
             if (!q1.empty) {
                 const doc1 = q1.docs[0].data();
                 if (doc1.startDate > messageTimestamp) {
-                    myDoc1.update({
+                    yield myDoc1.update({
                         startDate: messageTimestamp
                     });
                 }
                 if (doc1.endDate < messageTimestamp) {
-                    myDoc1.update({
+                    yield myDoc1.update({
                         endDate: messageTimestamp
                     });
                 }
@@ -72,16 +67,48 @@ const StructureC = {
     insertConversation: (topLevelCollection, conversation) => {
         //the idea here is that we only need to find the collection for the conversation once, and therefore we can gain a little efficiently over multiple calls of insertMessage
         return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-            const conversationStartDate = firestore_1.Timestamp.fromDate(new Date(conversation.messages[0].timestamp));
-            const conversationEndDate = firestore_1.Timestamp.fromDate(new Date(conversation.messages[conversation.messages.length - 1].timestamp));
-            yield topLevelCollection.add({
-                surveyId: conversation.surveyId,
-                agentId: conversation.agentId,
+            const q1 = yield topLevelCollection.where("surveyId", "==", conversation.surveyId)
+                .where("agentId", "==", conversation.agentId)
+                .limit(1)
+                .get();
+            const conversationStartDate = Timestamp.fromDate(new Date(conversation.messages[0].timestamp));
+            const conversationEndDate = Timestamp.fromDate(new Date(conversation.messages[conversation.messages.length - 1].timestamp));
+            const myDoc1 = q1.empty ?
+                yield topLevelCollection.add({
+                    surveyId: conversation.surveyId,
+                    agentId: conversation.agentId,
+                    authorizedResearcherIds: [],
+                    startDate: conversationStartDate,
+                    endDate: conversationEndDate
+                })
+                : q1.docs[0].ref;
+            yield myDoc1.collection("conversations").add({
                 responseId: conversation.responseId,
-                authorizedResearcherIds: [],
-                startDate: conversationStartDate,
-                endDate: conversationEndDate
+                messages: conversation.messages.map((message) => {
+                    return {
+                        input: message.input,
+                        output: message.output,
+                        parameters: message.parameters,
+                        timestamp: Timestamp.fromDate(new Date(message.timestamp))
+                    };
+                })
             });
+            //check if the startDate or endDate need to be updated
+            if (!q1.empty) {
+                const doc1 = q1.docs[0].data();
+                if (doc1.startDate > conversationStartDate) {
+                    yield myDoc1.update({
+                        startDate: conversationStartDate
+                    });
+                }
+                if (doc1.endDate < conversationEndDate) {
+                    yield myDoc1.update({
+                        endDate: conversationEndDate
+                    });
+                }
+            }
+            //by the nature of the data, it is very unlikely that the startDate or endDate will need to be updated
+            //this is because that would apply that this conversation spanned over all the other conversations in the survey
             resolve();
         }));
     },
@@ -89,19 +116,33 @@ const StructureC = {
         return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
             const q1 = yield topLevelCollection.where("surveyId", "==", surveyId)
                 .where("agentId", "==", agentId)
-                .where("responseId", "==", responseId)
                 .limit(1)
                 .get();
             if (q1.empty) {
                 reject("No conversation found");
+                return;
             }
             const data = q1.docs[0].data();
-            resolve({
-                surveyId: data.surveyId,
-                agentId: data.agentId,
-                responseId: data.responseId,
-                messages: yield readMessagesFromConversation(q1.docs[0].ref)
-            });
+            const q2 = yield q1.docs[0].ref.collection("conversations").where("responseId", "==", responseId).limit(1).get();
+            if (q2.empty) {
+                reject("No conversation found");
+                return;
+            }
+            else {
+                resolve({
+                    surveyId: data.surveyId,
+                    agentId: data.agentId,
+                    responseId: q2.docs[0].data().responseId,
+                    messages: q2.docs[0].data().messages.map((message) => {
+                        return {
+                            input: message.input,
+                            output: message.output,
+                            parameters: message.parameters,
+                            timestamp: message.timestamp.toDate().toISOString()
+                        };
+                    })
+                });
+            }
         }));
     },
     retrieveSurvey: (topLevelCollection, surveyId) => {
@@ -109,16 +150,27 @@ const StructureC = {
             const q1 = yield topLevelCollection.where("surveyId", "==", surveyId).get();
             if (q1.empty) {
                 reject("No survey found");
+                return;
             }
             const conversations = [];
             const myPromises = [];
-            q1.forEach((doc) => {
+            q1.forEach((doc1) => {
                 myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                    conversations.push({
-                        surveyId: doc.data().surveyId,
-                        agentId: doc.data().agentId,
-                        responseId: doc.data().responseId,
-                        messages: yield readMessagesFromConversation(doc.ref)
+                    const q2 = yield doc1.ref.collection("conversations").get();
+                    q2.forEach((doc2) => {
+                        conversations.push({
+                            surveyId: doc1.data().surveyId,
+                            agentId: doc1.data().agentId,
+                            responseId: doc2.data().responseId,
+                            messages: doc2.data().messages.map((message) => {
+                                return {
+                                    input: message.input,
+                                    output: message.output,
+                                    parameters: message.parameters,
+                                    timestamp: message.timestamp.toDate().toISOString()
+                                };
+                            })
+                        });
                     });
                     resolve();
                 })));
@@ -135,16 +187,27 @@ const StructureC = {
             const q1 = yield topLevelCollection.get();
             if (q1.empty) {
                 resolve([]);
+                return;
             }
             const conversations = [];
             const myPromises = [];
-            q1.forEach((doc) => {
+            q1.forEach((doc1) => {
                 myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                    conversations.push({
-                        surveyId: doc.data().surveyId,
-                        agentId: doc.data().agentId,
-                        responseId: doc.data().responseId,
-                        messages: yield readMessagesFromConversation(doc.ref)
+                    const q2 = yield doc1.ref.collection("conversations").get();
+                    q2.forEach((doc2) => {
+                        conversations.push({
+                            surveyId: doc1.data().surveyId,
+                            agentId: doc1.data().agentId,
+                            responseId: doc2.data().responseId,
+                            messages: doc2.data().messages.map((message) => {
+                                return {
+                                    input: message.input,
+                                    output: message.output,
+                                    parameters: message.parameters,
+                                    timestamp: message.timestamp.toDate().toISOString()
+                                };
+                            })
+                        });
                     });
                     resolve();
                 })));
@@ -158,7 +221,7 @@ const StructureC = {
             const q1 = yield topLevelCollection.where("surveyId", "in", surveyIds).get();
             const myPromises = [];
             q1.forEach((doc) => {
-                if (!(researcherId in doc.data().authorizedResearcherIds)) {
+                if (!(doc.data().authorizedResearcherIds.includes(researcherId))) {
                     myPromises.push(doc.ref.update({
                         authorizedResearcherIds: doc.data().authorizedResearcherIds.concat(researcherId)
                     }));
@@ -172,35 +235,46 @@ const StructureC = {
         return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
             const q1 = yield topLevelCollection.where("authorizedResearcherIds", "array-contains", researcherId).get();
             const surveyIds = [];
-            const myPromises = [];
             q1.forEach((doc) => {
-                myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                    surveyIds.push(doc.data().surveyId);
-                    resolve();
-                })));
+                surveyIds.push(doc.data().surveyId);
             });
             resolve(surveyIds);
         }));
     },
     getConversationsBetween: (topLevelCollection, start, end) => {
         return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-            const q1 = yield topLevelCollection.where("startDate", ">=", firestore_1.Timestamp.fromDate(start)).where("endDate", "<=", firestore_1.Timestamp.fromDate(end)).get();
+            //because of the limitations of firestore, we can only query with ord on one field at a time (but we can use multiple ords)
+            //this implementation will use one query that overshoots(giving us all surveys after the start) and then filter hose down here
+            //note this may create an undue burden on the client if this code is run client side
+            const q1 = yield topLevelCollection.where("startDate", ">=", Timestamp.fromDate(start)).get();
             const conversations = [];
             const myPromises = [];
-            q1.forEach((doc) => {
-                myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                    conversations.push({
-                        surveyId: doc.data().surveyId,
-                        agentId: doc.data().agentId,
-                        responseId: doc.data().responseId,
-                        messages: yield readMessagesFromConversation(doc.ref)
-                    });
-                    resolve();
-                })));
+            q1.forEach((doc1) => {
+                if (doc1.data().endDate.toDate() <= end) {
+                    myPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
+                        const q2 = yield doc1.ref.collection("conversations").get();
+                        q2.forEach((doc2) => {
+                            conversations.push({
+                                surveyId: doc1.data().surveyId,
+                                agentId: doc1.data().agentId,
+                                responseId: doc2.data().responseId,
+                                messages: doc2.data().messages.map((message) => {
+                                    return {
+                                        input: message.input,
+                                        output: message.output,
+                                        parameters: message.parameters,
+                                        timestamp: message.timestamp.toDate().toISOString()
+                                    };
+                                })
+                            });
+                        });
+                        resolve();
+                    })));
+                }
             });
             yield Promise.all(myPromises);
             resolve(conversations);
         }));
     }
 };
-exports.default = StructureC;
+export default StructureC;

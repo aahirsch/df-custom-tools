@@ -1,6 +1,6 @@
 import {CollectionReference, DocumentReference,QuerySnapshot,DocumentData,Timestamp, DocumentSnapshot, QueryDocumentSnapshot} from "@google-cloud/firestore"
 
-import { DatabaseInterface,Message,Conversation,Survey } from "./DatabaseInterface"
+import { DatabaseInterface,Message,Conversation,Survey } from "./DatabaseInterface.js"
 
 
 
