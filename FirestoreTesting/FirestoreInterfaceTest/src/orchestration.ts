@@ -1,16 +1,16 @@
 import {Firestore,DocumentData} from "@google-cloud/firestore"
 import { DatabaseInterface,Message, Survey, Conversation } from "./DatabaseInterface.js"
 
-import {parser} from "./parser.js"
+import {parser} from "./parser"
 
-import metricWrapper from "./Monitoring.js"
+import metricWrapper from "./Monitoring"
 
-import {conversion} from "./conversion.js"
+import {conversion} from "./conversion"
 
-import StructureA from "./StructureA.js"
-import StructureB from "./StructureB.js"
-import StructureC from "./StructureC.js"
-import StructureD from "./StructureD.js"
+import StructureA from "./StructureA"
+import StructureB from "./StructureB"
+import StructureC from "./StructureC"
+import StructureD from "./StructureD"
 
 
 
@@ -55,14 +55,14 @@ async function massConvoUpload(structure: DatabaseInterface, topLevelCollection:
   }
 }
 
-async function retriveConvo(structure: DatabaseInterface, topLevelCollection: string, sID: string, aID: string, rID: string){
+async function retrieveConvo(structure: DatabaseInterface, topLevelCollection: string, sID: string, aID: string, rID: string){
   const testingCollection = db.collection(topLevelCollection);
   const result = await structure.retrieveConversation(testingCollection,sID,aID,rID);
   console.log('The conversation is...');
   console.log(result);
 }
 
-async function retriveSurvey(structure: DatabaseInterface, topLevelCollection: string, sID: string){
+async function retrieveSurvey(structure: DatabaseInterface, topLevelCollection: string, sID: string){
   const testingCollection = db.collection(topLevelCollection);
   const result = await structure.retrieveSurvey(testingCollection,sID);
   console.log('The survey is...');
@@ -123,8 +123,8 @@ let data  = parser('/Users/christophersebastian/df-custom/df-custom-tools/dataCS
 async function centralizedWrites(structure: DatabaseInterface, topLevelCollection: string) {
   await massUpload(structure,topLevelCollection,data);
   await massConvoUpload(structure,topLevelCollection,data);
-  await retriveConvo(structure,topLevelCollection, data[0].surveyId as string, data[0].agentId as string, data[0].responseId as string);
-  await retriveSurvey(structure,topLevelCollection,data[0].surveyId as string);
+  await retrieveConvo(structure,topLevelCollection, data[0].surveyId as string, data[0].agentId as string, data[0].responseId as string);
+  await retrieveSurvey(structure,topLevelCollection,data[0].surveyId as string);
   await retAll(structure,topLevelCollection);
   await giveAc2Survey(structure,topLevelCollection,"Zuckerberg",[data[0].surveyId] as string[]);
   await getAcSurveys(structure,topLevelCollection, "Zuckerberg");
