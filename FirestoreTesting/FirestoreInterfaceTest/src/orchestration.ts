@@ -1,4 +1,4 @@
-import {Firestore,DocumentData} from "@google-cloud/firestore"
+import {Firestore,DocumentData, CollectionReference, DocumentSnapshot} from "@google-cloud/firestore"
 import { DatabaseInterface,Message, Survey, Conversation } from "./DatabaseInterface.js"
 
 import {parser} from "./parser"
@@ -13,13 +13,13 @@ import StructureC from "./StructureC"
 import StructureD from "./StructureD"
 
 
+//Time waited before running the tests to ensure the accuracy of metrics
+const timeBuffer =1 //4*60*1000 //ms
 
-
-
-// intializing stuff
+// initializing stuff
 declare var require: any
 
-let credentialsLocation = "/Users/christophersebastian/Downloads/heartschat-prod-a505-firebase-adminsdk-dgjo6-35494c7d54.json"
+let credentialsLocation = "./heartschat-prod-creds.json"
 
 
 import admin from 'firebase-admin'
@@ -36,73 +36,165 @@ admin.initializeApp({
 
 const db:Firestore=admin.firestore()
 
+//a function to set up a unique collection for each test to ensure that tests don't collide
+async function setUpWriteTest(name:string,topLevelCollection:string):Promise<CollectionReference<DocumentData>>{
+  const topLevelCollectionReference:CollectionReference = db.collection(topLevelCollection)
+  const testDocument = await topLevelCollectionReference.add({
+    "InitialTestName":name,
+    "at":new Date(),
+    "FurtherTests":[]
+  })
+  return testDocument.collection("testingCollection")
+}
+
+async function setUpReadTest(name:string,testingCollection:CollectionReference<DocumentData>):Promise<void>{
+  const parent:DocumentSnapshot|undefined = await testingCollection.parent?.get()
+  if (parent===undefined){
+    throw new Error("Invalid testing collection for a reading test")
+  }
+  else{
+    await parent.ref.update({
+      "FurtherTests":parent.data()?.FurtherTests.concat([{"name":name,"at":new Date()}])
+    })
+  }
+
+}
+
+//sets delay, logs metrics to console and times the function
+async function runTest(name:string,test:()=>Promise<any>):Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, timeBuffer));
+  console.log(`Starting test ${name}`)
+  const startTime = new Date()
+  const billingData=await metricWrapper(test)
+  const endTime = new Date()
+  console.log("Test started at: " + startTime)
+  console.log("Test ended at: " + endTime)
+  console.log(`Time Taken :${endTime.getTime()-startTime.getTime()}ms`)
+  console.log(`Billing Data: ${JSON.stringify(billingData)}`)
+}
+
 // function wrappings for easy testing
 
-async function massUpload(structure: DatabaseInterface, topLevelCollection: string, dataMessages: any[]){
-  const testingCollection = db.collection(topLevelCollection);
-  for (let i = 0; i<5; i++){
-    await structure.insertMessage(testingCollection, dataMessages[i] as Message)
-    console.log('successful upload ' + i);
-  }
-}
+async function massUpload(structure: DatabaseInterface,structureName:string, topLevelCollection: string, dataMessages: any[]):Promise<CollectionReference<DocumentData>>{
 
-async function massConvoUpload(structure: DatabaseInterface, topLevelCollection: string, dataMessages: any[]){
-  const testingCollection = db.collection(topLevelCollection);
-  let convos = conversion(dataMessages);
-  for (let i = 0; i<5; i++){
-    await structure.insertConversation(testingCollection,convos[i])
-    console.log('conversations upload ' + i);
-  }
-}
+  const testName=`massUpload-${structureName}`
+  
+  const testingCollection:CollectionReference<DocumentData> = await setUpWriteTest(testName,topLevelCollection)
 
-async function retrieveConvo(structure: DatabaseInterface, topLevelCollection: string, sID: string, aID: string, rID: string){
-  const testingCollection = db.collection(topLevelCollection);
-  const result = await structure.retrieveConversation(testingCollection,sID,aID,rID);
-  console.log('The conversation is...');
-  console.log(result);
-}
-
-async function retrieveSurvey(structure: DatabaseInterface, topLevelCollection: string, sID: string){
-  const testingCollection = db.collection(topLevelCollection);
-  const result = await structure.retrieveSurvey(testingCollection,sID);
-  console.log('The survey is...');
-  console.log(result);
-
-}
-
-async function retAll(structure: DatabaseInterface, topLevelCollection: string){
-  const testingCollection = db.collection(topLevelCollection);
-  const result = await structure.retrieveAll(testingCollection)
-    console.log('The conversations are...')
-    for(let i = 0; i < result.length; i++){
-      console.log(result[i])
+  await runTest(testName,async ()=>{
+    for (let i = 0; i<5; i++){
+      await structure.insertMessage(testingCollection, dataMessages[i] as Message)
+      //console.log('successful upload ' + i);
     }
+  })
+
+  return testingCollection
+}
+
+async function massConvoUpload(structure: DatabaseInterface, structureName:string, topLevelCollection: string, dataMessages: any[]):Promise<CollectionReference<DocumentData>>{
+  const testName=`massConvoUpload-${structureName}`
+
+  const testingCollection:CollectionReference<DocumentData> = await setUpWriteTest(structureName,topLevelCollection) 
+
+  await runTest(testName,async ()=>{
+  const convos = conversion(dataMessages);
+    for (let i = 0; i<5; i++){
+      await structure.insertConversation(testingCollection,convos[i])
+      //console.log('conversations upload ' + i)
+    }
+  })
+
+  return testingCollection
+}
+
+async function retrieveConvo(structure: DatabaseInterface, structureName:string, testingCollection:CollectionReference<DocumentData>, sID: string, aID: string, rID: string){
+
+  const testName=`retrieveConvo-${structureName}`
+
+  await setUpReadTest(testName,testingCollection)
+
+  await runTest(testName,async ()=>{
+    const result = await structure.retrieveConversation(testingCollection,sID,aID,rID)
+    //console.log('The conversation is...')
+    //console.log(result)
+  })
+}
+
+async function retrieveSurvey(structure: DatabaseInterface, structureName:string, testingCollection:CollectionReference<DocumentData>, sID: string){
+  const testName=`retrieveSurvey-${structureName}`
+
+  await setUpReadTest(testName,testingCollection)
+
+  await runTest(testName,async ()=>{
+    const result = await structure.retrieveSurvey(testingCollection,sID);
+    //console.log('The survey is...');
+    //console.log(result);
+  })
 
 }
 
-async function giveAc2Survey(structure: DatabaseInterface, topLevelCollection: string, reID: string, sIDs: string[]){
-  const testingCollection = db.collection(topLevelCollection);
-  await structure.giveAccessToSurveys(testingCollection, reID, sIDs)
-  console.log('success');
+async function retAll(structure: DatabaseInterface, structureName:string, testingCollection:CollectionReference<DocumentData>){
+
+  const testName=`retAll-${structureName}`
+
+  await setUpReadTest(testName,testingCollection)
+
+  await runTest(testName,async ()=>{
+    const result = await structure.retrieveAll(testingCollection)
+    //console.log('The conversations are...')
+    // for(let i = 0; i < result.length; i++){
+    //   console.log(result[i])
+    // }
+  })
+
 }
 
-async function getAcSurveys(structure: DatabaseInterface, topLevelCollection: string, reID: string){
-  const testingCollection = db.collection(topLevelCollection);
-  const res = await structure.getAccessibleSurveys(testingCollection, reID)
-  console.log('The accessible surveys are...');
-  for(let i = 0; i < res.length; i++){
-    console.log(res[i])
-  }
+async function giveAc2Survey(structure: DatabaseInterface, structureName:string,testingCollection:CollectionReference<DocumentData> , reID: string, sIDs: string[]){
+  const testName=`giveAc2Survey-${structureName}`
+
+  await setUpReadTest(testName,testingCollection)
+
+  await runTest(testName,async ()=>{
+
+    await structure.giveAccessToSurveys(testingCollection, reID, sIDs)
+    //console.log('success');
+
+  })
+}
+
+async function getAcSurveys(structure: DatabaseInterface,structureName:string, testingCollection:CollectionReference, reID: string){
+
+  const testName=`getAcSurveys-${structureName}`
+
+  await setUpReadTest(testName,testingCollection)
+
+  await runTest(testName,async ()=>{
+
+    const res = await structure.getAccessibleSurveys(testingCollection, reID)
+    // console.log('The accessible surveys are...');
+    // for(let i = 0; i < res.length; i++){
+    //   console.log(res[i])
+    // }
+
+  })
 
 }
 
-async function getConvoBetween(structure: DatabaseInterface, topLevelCollection: string, start: Date, end: Date){
-  const testingCollection = db.collection(topLevelCollection);
-  const res= await structure.getConversationsBetween(testingCollection, start, end);
-  console.log('The conversations are...');
-  for(let i = 0; i < res.length; i++){
-      console.log(res[i]);
-  }
+async function getConvoBetween(structure: DatabaseInterface, structureName:string, testingCollection:CollectionReference, start: Date, end: Date){
+
+  const testName=`getConvoBetween-${structureName}`
+
+  await setUpReadTest(testName,testingCollection)
+
+  await runTest(testName,async ()=>{
+
+    const res= await structure.getConversationsBetween(testingCollection, start, end);
+    // console.log('The conversations are...');
+    // for(let i = 0; i < res.length; i++){
+    //     console.log(res[i]);
+    // }
+
+  })
 }
 
 
@@ -120,15 +212,15 @@ let data  = parser('/Users/christophersebastian/df-custom/df-custom-tools/dataCS
 
 //call tests
 
-async function centralizedWrites(structure: DatabaseInterface, topLevelCollection: string) {
-  await massUpload(structure,topLevelCollection,data);
-  await massConvoUpload(structure,topLevelCollection,data);
-  await retrieveConvo(structure,topLevelCollection, data[0].surveyId as string, data[0].agentId as string, data[0].responseId as string);
-  await retrieveSurvey(structure,topLevelCollection,data[0].surveyId as string);
-  await retAll(structure,topLevelCollection);
-  await giveAc2Survey(structure,topLevelCollection,"Zuckerberg",[data[0].surveyId] as string[]);
-  await getAcSurveys(structure,topLevelCollection, "Zuckerberg");
-  await getConvoBetween(structure,topLevelCollection, new Date(data[0].timestamp as string), new Date(data[1].timestamp as string));
+async function centralizedWrites(structure: DatabaseInterface, structureName:string, topLevelCollection: string) {
+  const massUploadRef = await massUpload(structure,structureName,topLevelCollection,data);
+  const massConvoUploadRef = await massConvoUpload(structure,structureName,topLevelCollection,data);
+  await retrieveConvo(structure,structureName,massUploadRef, data[0].surveyId as string, data[0].agentId as string, data[0].responseId as string)
+  await retrieveSurvey(structure,structureName,massUploadRef,data[0].surveyId as string)
+  await retAll(structure,structureName,massUploadRef)
+  await giveAc2Survey(structure,structureName,massUploadRef,"Zuckerberg",[data[0].surveyId] as string[])
+  await getAcSurveys(structure,structureName, massConvoUploadRef, "Zuckerberg")//should be a different collection
+  await getConvoBetween(structure,structureName, massConvoUploadRef, new Date(data[0].timestamp as string), new Date(data[1].timestamp as string));
 }
 
-centralizedWrites(StructureA, "officalTest");
+centralizedWrites(StructureA, "StructureA", "testingTrials");
