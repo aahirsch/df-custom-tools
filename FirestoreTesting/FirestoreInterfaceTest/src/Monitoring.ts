@@ -93,17 +93,19 @@ async function getNewToken(): Promise<string>{
   })
 }
 
-async function metricWrapper(fun: () => Promise<any>): Promise<[number,number,number,number]>{
+//returns [timeTaken,lookupReads, queryReads, updateWrites, createWrites]
+async function metricWrapper(fun: () => Promise<any>): Promise<[number,number,number,number,number]>{
   const token:string=await getNewToken()
   return new Promise(async (resolve, reject) => {
     const start = new Date()
     fun().then( async () => setTimeout(
       async () => {
         const end = new Date()
-        const seconds = Math.ceil((end.getTime() - start.getTime())/1000)
+        const ms = end.getTime() - start.getTime()
+        const seconds = Math.ceil((ms)/1000)
         const [lookupReads, queryReads] = await getReads(token, seconds)
         const [updateWrites, createWrites] = await getWrites(token, seconds)
-        resolve([lookupReads, queryReads, updateWrites, createWrites])
+        resolve([ms,lookupReads, queryReads, updateWrites, createWrites])
     },60*4*1000))
   })
 }

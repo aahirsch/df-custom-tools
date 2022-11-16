@@ -1,5 +1,5 @@
 import {Firestore,DocumentData, CollectionReference, DocumentSnapshot} from "@google-cloud/firestore"
-import { DatabaseInterface,Message, Survey, Conversation } from "./DatabaseInterface.js"
+import { DatabaseInterface,Message, Survey, Conversation } from "./DatabaseInterface"
 
 import {parser} from "./parser"
 
@@ -14,7 +14,7 @@ import StructureD from "./StructureD"
 
 
 //Time waited before running the tests to ensure the accuracy of metrics
-const timeBuffer =1 //4*60*1000 //ms
+const timeBuffer = 4*60*1000 //ms
 
 // initializing stuff
 declare var require: any
@@ -69,8 +69,11 @@ async function runTest(name:string,test:()=>Promise<any>):Promise<void> {
   const endTime = new Date()
   console.log("Test started at: " + startTime)
   console.log("Test ended at: " + endTime)
-  console.log(`Time Taken :${endTime.getTime()-startTime.getTime()}ms`)
-  console.log(`Billing Data: ${JSON.stringify(billingData)}`)
+  console.log(`Time Taken :${billingData[0]}ms`)
+  console.log(`lookupReads :${billingData[1]}`)
+  console.log(`queryReads :${billingData[2]}`)
+  console.log(`updateWrites :${billingData[3]}`)
+  console.log(`createWrites :${billingData[4]}`)
 }
 
 // function wrappings for easy testing
@@ -82,7 +85,7 @@ async function massUpload(structure: DatabaseInterface,structureName:string, top
   const testingCollection:CollectionReference<DocumentData> = await setUpWriteTest(testName,topLevelCollection)
 
   await runTest(testName,async ()=>{
-    for (let i = 0; i<5; i++){
+    for (let i = 0; i<dataMessages.length; i++){
       await structure.insertMessage(testingCollection, dataMessages[i] as Message)
       //console.log('successful upload ' + i);
     }
@@ -98,7 +101,7 @@ async function massConvoUpload(structure: DatabaseInterface, structureName:strin
 
   await runTest(testName,async ()=>{
   const convos = conversion(dataMessages);
-    for (let i = 0; i<5; i++){
+    for (let i = 0; i<convos.length; i++){
       await structure.insertConversation(testingCollection,convos[i])
       //console.log('conversations upload ' + i)
     }
@@ -200,17 +203,7 @@ async function getConvoBetween(structure: DatabaseInterface, structureName:strin
 
 
 // get data
-let data  = parser('/Users/christophersebastian/df-custom/df-custom-tools/dataCSV.xlsx - _merge.csv');
-  // massUpload(StructureA,"officalTest",data);
-  // massConvoUpload(StructureA,"officalTest",data);
-  // retriveConvo(StructureA,"officalTest", data[0].surveyId as string, data[0].agentId as string, data[0].responseId as string);
-  // retriveSurvey(StructureA,"officalTest",data[0].surveyId as string);
-  // retAll(StructureA,"officalTest");
-  // giveAc2Survey(StructureA,"officalTest","Zuckerberg",[data[0].surveyId] as string[]);
-  // getAcSurveys(StructureA,"officalTest", "Zuckerberg");
-  // getConvoBetween(StructureA,"officalTest", new Date(data[0].timestamp as string), new Date(data[1].timestamp as string));
-
-//call tests
+let data  = parser('C:/Users/japan/Documents/Projects/Negotiation Chatbot/df-custom-tools/dataCSV.xlsx - _merge.csv');
 
 async function centralizedWrites(structure: DatabaseInterface, structureName:string, topLevelCollection: string) {
   const massUploadRef = await massUpload(structure,structureName,topLevelCollection,data);
@@ -219,8 +212,18 @@ async function centralizedWrites(structure: DatabaseInterface, structureName:str
   await retrieveSurvey(structure,structureName,massUploadRef,data[0].surveyId as string)
   await retAll(structure,structureName,massUploadRef)
   await giveAc2Survey(structure,structureName,massUploadRef,"Zuckerberg",[data[0].surveyId] as string[])
-  await getAcSurveys(structure,structureName, massConvoUploadRef, "Zuckerberg")//should be a different collection
-  await getConvoBetween(structure,structureName, massConvoUploadRef, new Date(data[0].timestamp as string), new Date(data[1].timestamp as string));
+  await getAcSurveys(structure,structureName, massUploadRef, "Zuckerberg")
+  //await getConvoBetween(structure,structureName, massUploadRef, new Date(data[0].timestamp as string), new Date(data[1].timestamp as string));
 }
 
-centralizedWrites(StructureA, "StructureA", "testingTrials");
+
+//call tests
+
+async function testAll() {
+  //await centralizedWrites(StructureA, "StructureA", "testingTrials")
+  await centralizedWrites(StructureB, "StructureB", "testingTrials")
+  await centralizedWrites(StructureC, "StructureC", "testingTrials")
+  await centralizedWrites(StructureD, "StructureD", "testingTrials")
+}
+
+testAll()
