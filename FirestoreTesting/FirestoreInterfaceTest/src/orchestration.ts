@@ -37,7 +37,7 @@ admin.initializeApp({
 const db:Firestore=admin.firestore()
 
 //a function to set up a unique collection for each test to ensure that tests don't collide
-async function setUpWriteTest(name:string,topLevelCollection:string):Promise<CollectionReference<DocumentData>>{
+export async function setUpWriteTest(name:string,topLevelCollection:string):Promise<CollectionReference<DocumentData>>{
   const topLevelCollectionReference:CollectionReference = db.collection(topLevelCollection)
   const testDocument = await topLevelCollectionReference.add({
     "InitialTestName":name,
