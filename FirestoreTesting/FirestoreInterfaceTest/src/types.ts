@@ -34,6 +34,8 @@ interface LogMetadata {
   responseId: string;
   request: string;
   response: string;
+  intent: string;
+  intentCf: string;
 }
 
 export interface LogResponse extends LogMetadata {

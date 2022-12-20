@@ -1,4 +1,4 @@
-import {Firestore,DocumentData, CollectionReference, DocumentSnapshot} from "@google-cloud/firestore"
+import {Firestore,DocumentData, CollectionReference, DocumentSnapshot, OrderByDirection, Timestamp} from "@google-cloud/firestore"
 import { DatabaseInterface,Message, Survey, Conversation } from "./DatabaseInterface"
 import { Logging } from "@google-cloud/logging";
 import { ResponseMessage, LogResponse } from "./types";
@@ -17,6 +17,7 @@ import admin from 'firebase-admin'
 
 
 import fs from "fs"
+import { clear } from "console";
 
 const credentials = JSON.parse(fs.readFileSync(credentialsLocation,"utf-8"))
 
@@ -25,12 +26,12 @@ admin.initializeApp({
   credential: admin.credential.cert(credentials)
 })
 
-const db:Firestore=admin.firestore()
+const db: Firestore = admin.firestore()
 
 
 let col: CollectionReference = db.collection("testingCloudFunctions");
 
-let lastRan: Date;
+
 let tooCloseToUpload = new Map<String, LogResponse[]>();
 
 function transformMessages(messages: ResponseMessage[]): string {
@@ -41,8 +42,11 @@ export async function* readResponses(
   projectId: string,
   logging = new Logging({ projectId })
 ): AsyncIterable<LogResponse> {
-  const start = lastRan;
+
+  // end of call is current time, start is 2 days and 2 hours before right now
   const end = new Date();
+  const start = new Date(end.getDay() - 2);
+  start.setHours(start.getHours() - 2);
 
   const stream = logging.getEntriesStream({
     maxApiCalls: 20,
@@ -64,72 +68,72 @@ export async function* readResponses(
       request: data.queryResult?.text ?? "",
       response: transformMessages(data.queryResult?.responseMessages ?? []),
       parameters: data.queryResult?.parameters ?? {},
+      intent: metadata.labels.intent ?? "",
+      intentCf: metadata.labels.intentCf ?? "",
     };
   }
 }
 
 export async function allAtOnce(
   projectId: string, 
-  logging = new Logging({ projectId })) {
-
+  logging = new Logging({ projectId })
+  ) {
+  // querry for last upload
+  let lastDoc = await (await col.orderBy("timestamp","desc").limit(1).get()).docs[0];
+  // get date of last upload
+  let lastRan: Date =  lastDoc.data().message.timestamp.toDate();
+  // cutOff, aka when we stop taking on new data, is 45 ahead last up Load
+  let cutOff: Date = lastRan;
+  cutOff.setMinutes(lastRan.getMinutes() + 45);
+  
+  // map for data
   let map = new Map<String, LogResponse[]>();
-  map = tooCloseToUpload;
-  tooCloseToUpload.clear;
 
-  const stream = readResponses("project id", logging as any)
-
-  let time: Date = new Date()
-  time.setMinutes(time.getMinutes() - 45)
-
+  // only takes on data 45 minutes before now
+  const startTime = new Date();
+  startTime.setMinutes(startTime.getMinutes() - 45);
+  
+  // gets stream
+  const stream = readResponses("project id", logging as any);
+  // loops
   for await (const response of stream) {
-    
-    let temp = response.agentId;
-    let stamp: Date = new Date(response.timestamp)
+    // gets log's date
+    let curDate: Date = new Date(response.timestamp);
+    // if it is to close we don't upload it, move to next in loop
+    if(curDate > startTime) {
+      continue;
+    } else{
+      // if it is within cut off of last run, enter special case
+      if(curDate < cutOff) {
+        // if map has already been emptied, and this is older than last upload, then we done
+        if(map.size == 0 && curDate < lastRan) {
+          return;
+        }
+        // if map doesn't contain it already, pass it. Else, add it
+        if(!map.has(response.responseId)) {
+          continue;
+        } else {
+          map.get(response.responseId)?.push(response);
+        }
 
-    if(stamp !<= time) {
-      if(tooCloseToUpload.has(temp)) {
-        tooCloseToUpload.get(temp)?.push(response)
       } else {
-        tooCloseToUpload.set(temp, [response])
+        // if we are witing regular time, add all data: either pre-existing, or new 
+        if(map.has(response.responseId)) {
+          map.get(response.responseId)?.push(response);  
+        } else {
+          map.set(response.responseId,[response]);
+        }
       }
-    } else {
-      if(tooCloseToUpload.has(temp)) {
-        tooCloseToUpload.get(temp)?.push(response)
-      } else if(map.has(temp)) {
-        map.get(temp)?.push(response)
-      } else {
-        map.set(temp,[response])
+      // if that data we just uploaded was the first, then upload it to the DB and delete
+      // it from the map! 
+      if(response.parameters.first_msg == 1 && response.intent == "Default Welcome Intent") {
+        let lr: LogResponse[] = map.get(response.responseId) ?? [];
+        let temp: Conversation = conversion(lr);
+        await StructureC.insertConversation(col,temp);
+        map.delete(response.responseId);
       }
     }
-
-    /*Logic:
-    // First we take all the data that was in the last too close to upload
-    // and we feed it to our current map. Then we empty the too close to upload.
-    // This means that all the data that was too close to be uploaded in the last one
-    // is now in ready to be uploaded.
-
-    // Then we go through the new data. If the data is with the past 45 minutes
-    // then we send it to the too close to upload. If the data is not within the
-    // last 45 minutes then we do a check to find out of the id is within the 
-    // too close to upload. IF it is, then it means that the data is in that weird
-    // cut-off where half of it is on time but the other half isn't and it could
-    // theoretically still be going on. 
-
-    // So, if we encounter data that is okay on time, but has Id that is in the
-    // too close to upload then we add that data, even though it's time is okay,
-    // to the too close to upload. 
-
-    // However, if it isn't present, that means we know for 100% that the conversation
-    // is done and we can then add it conoversations to be uploaded map.
-    */
   }
-
-  for(let groupedResponses of map.values()) {
-    let temp: Conversation = conversion(groupedResponses)
-    await StructureC.insertConversation(col,temp)
-  }
-
-  lastRan = new Date()
 }
 
 
