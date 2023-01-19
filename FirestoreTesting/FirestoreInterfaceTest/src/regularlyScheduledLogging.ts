@@ -78,13 +78,11 @@ export async function allAtOnce(
   projectId: string, 
   logging = new Logging({ projectId })
   ) {
-  // querry for last upload
+  // Querry the db for last upload filted based on time
   let lastDoc = await (await col.orderBy("timestamp","desc").limit(1).get()).docs[0];
-  // get date of last upload
+  // Get the date out of the last upload
   let lastRan: Date =  lastDoc.data().message.timestamp.toDate();
-  // cutOff, aka when we stop taking on new data, is 45 ahead last up Load
-  let cutOff: Date = lastRan;
-  cutOff.setMinutes(lastRan.getMinutes() + 45);
+
   
   // map for data
   let map = new Map<String, LogResponse[]>();
@@ -99,33 +97,44 @@ export async function allAtOnce(
   for await (const response of stream) {
     // gets log's date
     let curDate: Date = new Date(response.timestamp);
-    // if it is to close we don't upload it, move to next in loop
+    
+    // Break condition: if map has already been emptied, and curDate is older than last run, then we done
+    // Becuase we know that we have traversed through all the logs and comppleted
+    // all uploads. As far as I can tell, this will always be met at some point. 
+    if(map.size == 0 && curDate < lastRan) {
+      return; 
+    }
+
+    // if it is within 45 minutes of now, we don't upload it, move to next in loop
     if(curDate > startTime) {
       continue;
     } else{
-      // if it is within cut off of last run, enter special case
-      if(curDate < cutOff) {
-        // if map has already been emptied, and this is older than last upload, then we done
-        if(map.size == 0 && curDate < lastRan) {
-          return;
-        }
-        // if map doesn't contain it already, pass it. Else, add it
+      // everything below this line is done with the assumption that the message is older 
+      // than 45 minutes
+
+
+      // If we have reached the time of last upload, we only want to add messages that 
+      // we have already added to our map so...
+      if(curDate < lastRan) {
+        // ...If map doesn't contain the ID, we don't add it... 
         if(!map.has(response.responseId)) {
           continue;
         } else {
+          //...Else means our map does contain this ID so we add it
           map.get(response.responseId)?.push(response);
         }
 
       } else {
-        // if we are witing regular time, add all data: either pre-existing, or new 
+        //Here, we know that we are before the lastRan time, so we always add
+        // This inner logic is just so we properly add this message to our map
         if(map.has(response.responseId)) {
           map.get(response.responseId)?.push(response);  
         } else {
           map.set(response.responseId,[response]);
         }
       }
-      // if that data we just uploaded was the first, then upload it to the DB and delete
-      // it from the map! 
+      // if that data we just uploaded was the first, then we know we have gotten all the possible
+      // data from this response ID, adn we can thus upload it to the DB and delete it from the map! 
       if(response.parameters.first_msg == 1 && response.intent == "Default Welcome Intent") {
         let lr: LogResponse[] = map.get(response.responseId) ?? [];
         let temp: Conversation = conversion(lr);
