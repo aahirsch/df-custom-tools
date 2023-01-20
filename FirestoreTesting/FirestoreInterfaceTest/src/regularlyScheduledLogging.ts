@@ -79,7 +79,11 @@ export async function allAtOnce(
   logging = new Logging({ projectId })
   ) {
   // Querry the db for last upload filted based on time
-  let lastDoc = await (await col.orderBy("timestamp","desc").limit(1).get()).docs[0];
+  // If we filter on end-date, then we do not have to do anything special with the query call
+  // becuase end-date is a top level member of each document and we can use that to determine 
+  // when is the oldest end date (instead of seaching each individual message to find which)
+  // is the odlest
+  let lastDoc = await (await col.orderBy("end-date","desc").limit(1).get()).docs[0];
   // Get the date out of the last upload
   let lastRan: Date =  lastDoc.data().message.timestamp.toDate();
 
