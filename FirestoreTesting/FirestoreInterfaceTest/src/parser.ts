@@ -1,5 +1,5 @@
 import internal from "stream";
-import  {Message} from "./DatabaseInterface.js"
+import  {Message} from "./DatabaseInterface"
 import fs from "fs"
 
 
@@ -88,11 +88,11 @@ export const parser = (filepath: string) => {
       return jsonObject
 }
 
-let data  = parser('/Users/christophersebastian/df-custom/df-custom-tools/dataCSV.xlsx - _merge.csv');
+//let data  = parser('C:/Users/japan/Documents/Projects/Negotiation Chatbot/df-custom-tools/dataCSV.xlsx - _merge.csv');
 
-for(let i= 0; i < 5; i++){
-    console.log(data[i]);
-}
+// for(let i= 0; i < 5; i++){
+//     console.log(data[i]);
+// }
 
 
 

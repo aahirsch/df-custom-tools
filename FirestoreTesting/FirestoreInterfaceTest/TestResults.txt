@@ -1,0 +1,782 @@
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>gcloud init
+Welcome! This command will take you through the configuration of gcloud.
+
+Settings from your current configuration [just-service-account] are:
+accessibility:
+  screen_reader: 'False'
+core:
+  account: firebase-adminsdk-dgjo6@heartschat-prod-a505.iam.gserviceaccount.com
+  disable_usage_reporting: 'False'
+  project: heartschat-prod-a505
+
+Pick configuration to use:
+ [1] Re-initialize this configuration [just-service-account] with new settings
+ [2] Create a new configuration
+ [3] Switch to and re-initialize existing configuration: [default]
+ [4] Switch to and re-initialize existing configuration: [test1]
+Please enter your numeric choice:  1
+
+Your current configuration has been set to: [just-service-account]
+
+You can skip diagnostics next time by using the following flag:
+  gcloud init --skip-diagnostics
+
+Network diagnostic detects and fixes local network connection issues.
+Checking network connection...done.
+Reachability Check passed.
+Network diagnostic passed (1/1 checks passed).
+
+Choose the account you would like to use to perform operations for this configuration:
+ [1] cysinger@upenn.edu
+ [2] firebase-adminsdk-dgjo6@heartschat-prod-a505.iam.gserviceaccount.com
+ [3] Log in with a new account
+Please enter your numeric choice:  2
+
+You are logged in as: [firebase-adminsdk-dgjo6@heartschat-prod-a505.iam.gserviceaccount.com].
+
+Pick cloud project to use:
+ [1] heartschat-prod-a505
+ [2] Enter a project ID
+ [3] Create a new project
+Please enter numeric choice or text value (must exactly match list item):  1
+
+Your current project has been set to: [heartschat-prod-a505].
+
+Not setting default zone/region (this feature makes it easier to use
+[gcloud compute] by setting an appropriate default value for the
+--zone and --region flag).
+See https://cloud.google.com/compute/docs/gcloud-compute section on how to set
+default compute region and zone manually. If you would like [gcloud init] to be
+able to do this for you the next time you run it, make sure the
+Compute Engine API is enabled for your project on the
+https://console.developers.google.com/apis page.
+
+Your Google Cloud SDK is configured and ready to use!
+
+* Commands that require authentication will use firebase-adminsdk-dgjo6@heartschat-prod-a505.iam.gserviceaccount.com by default
+* Commands will reference project `heartschat-prod-a505` by default
+Run `gcloud help config` to learn how to change individual settings
+
+This gcloud configuration is called [just-service-account]. You can create additional configurations if you work with multiple accounts and/or projects.
+Run `gcloud topic configurations` to learn more.
+
+Some things to try next:
+
+* Run `gcloud --help` to see the Cloud Platform services you can interact with. And run `gcloud help COMMAND` to get help on any gcloud command.
+* Run `gcloud topic --help` to learn about advanced features of the SDK like arg files and output formatting
+* Run `gcloud cheat-sheet` to see a roster of go-to `gcloud` commands.
+
+
+Updates are available for some Google Cloud CLI components.  To install them,
+please run:
+  $ gcloud components update
+
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 2.11s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+node:internal/fs/utils:345
+    throw err;
+    ^
+
+Error: ENOENT: no such file or directory, open '/Users/christophersebastian/df-custom/df-custom-tools/dataCSV.xlsx - _merge.csv'
+    at Object.openSync (node:fs:585:3)
+    at Object.readFileSync (node:fs:453:35)
+    at parser (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\parser.js:51:34)
+    at Object.<anonymous> (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\parser.js:85:31)
+    at Module._compile (node:internal/modules/cjs/loader:1105:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1159:10)
+    at Module.load (node:internal/modules/cjs/loader:981:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:822:12)
+    at Module.require (node:internal/modules/cjs/loader:1005:19)
+    at require (node:internal/modules/cjs/helpers:102:18) {
+  errno: -4058,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/christophersebastian/df-custom/df-custom-tools/dataCSV.xlsx - _merge.csv'
+}
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 2.07s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+node:internal/fs/utils:345
+    throw err;
+    ^
+
+Error: ENOENT: no such file or directory, open '.../dataCSV.xlsx - _merge.csv'
+    at Object.openSync (node:fs:585:3)
+    at Object.readFileSync (node:fs:453:35)
+    at parser (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\parser.js:51:34)
+    at Object.<anonymous> (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\parser.js:85:31)
+    at Module._compile (node:internal/modules/cjs/loader:1105:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1159:10)
+    at Module.load (node:internal/modules/cjs/loader:981:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:822:12)
+    at Module.require (node:internal/modules/cjs/loader:1005:19)
+    at require (node:internal/modules/cjs/helpers:102:18) {
+  errno: -4058,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '.../dataCSV.xlsx - _merge.csv'
+}
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 1.97s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+node:internal/fs/utils:345
+    throw err;
+    ^
+
+Error: ENOENT: no such file or directory, open '..../dataCSV.xlsx - _merge.csv'
+    at Object.openSync (node:fs:585:3)
+    at Object.readFileSync (node:fs:453:35)
+    at parser (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\parser.js:51:34)
+    at Object.<anonymous> (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\parser.js:85:31)
+    at Module._compile (node:internal/modules/cjs/loader:1105:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1159:10)
+    at Module.load (node:internal/modules/cjs/loader:981:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:822:12)
+    at Module.require (node:internal/modules/cjs/loader:1005:19)
+    at require (node:internal/modules/cjs/helpers:102:18) {
+  errno: -4058,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '..../dataCSV.xlsx - _merge.csv'
+}
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 2.02s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+node:internal/fs/utils:345
+    throw err;
+    ^
+
+Error: ENOENT: no such file or directory, open 'C:UsersjapanDocumentsProjectsNegotiation Chatbotdf-custom-toolsdataCSV.xlsx - _merge.csv'
+    at Object.openSync (node:fs:585:3)
+    at Object.readFileSync (node:fs:453:35)
+    at parser (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\parser.js:51:34)
+    at Object.<anonymous> (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\parser.js:85:31)
+    at Module._compile (node:internal/modules/cjs/loader:1105:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1159:10)
+    at Module.load (node:internal/modules/cjs/loader:981:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:822:12)
+    at Module.require (node:internal/modules/cjs/loader:1005:19)
+    at require (node:internal/modules/cjs/helpers:102:18) {
+  errno: -4058,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: 'C:UsersjapanDocumentsProjectsNegotiation Chatbotdf-custom-toolsdataCSV.xlsx - _merge.csv'
+}
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 1.98s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+{
+  agentId: '8b87e314-ec79-4386-9b5d-9347da0a0e23',
+  responseId: 'R_0kMun3ED5VRBeTL',
+  timestamp: 'Fri Jun 24 2022 20:09:56 GMT+0000 (Coordinated Universal Time)',
+  input: 'Hello',
+  output: 'Hello, I was hoping to take another look at the Jim Brine piece. Could you tell me a bit more about it?',
+  surveyId: '1',
+  parameters: { offers: [ '2', '4', '7', '2' ] }
+}
+{
+  agentId: '8b87e314-ec79-4386-9b5d-9347da0a0e23',
+  responseId: 'R_0kMun3ED5VRBeTL',
+  timestamp: 'Fri Jun 24 2022 20:11:12 GMT+0000 (Coordinated Universal Time)',
+  input: 'yes. this a 1 of a series paintings. Do you have any painting of this series?',
+  output: "Oh that's interesting. Have you seen the other pieces in the Hearts series?",
+  surveyId: '1',
+  parameters: { offers: [ '2', '4', '7', '2' ] }
+}
+{
+  agentId: '8b87e314-ec79-4386-9b5d-9347da0a0e23',
+  responseId: 'R_0kMun3ED5VRBeTL',
+  timestamp: 'Fri Jun 24 2022 20:11:51 GMT+0000 (Coordinated Universal Time)',
+  input: 'Yes',
+  output: '',
+  surveyId: '1',
+  parameters: { offers: [ '2', '4', '7', '2' ] }
+}
+{
+  agentId: '8b87e314-ec79-4386-9b5d-9347da0a0e23',
+  responseId: 'R_10qSf6T4WZYlCVY',
+  timestamp: 'Fri Jun 24 2022 19:53:36 GMT+0000 (Coordinated Universal Time)',
+  input: 'Hello',
+  output: 'Hello, I was hoping to take another look at the Jim Brine piece. Could you tell me a bit more about it?',
+  surveyId: '1',
+  parameters: { offers: [ '2', '1', '1', '2' ] }
+}
+{
+  agentId: '8b87e314-ec79-4386-9b5d-9347da0a0e23',
+  responseId: 'R_10qSf6T4WZYlCVY',
+  timestamp: 'Fri Jun 24 2022 19:54:59 GMT+0000 (Coordinated Universal Time)',
+  input: 'Absolutely! This piece is called Hearts in the Spring. Are you a Jim Brine collector?',
+  output: "I've seen a few of his other pieces. he's a fantastic artist",
+  surveyId: '1',
+  parameters: { offers: [ '2', '1', '1', '2' ] }
+}
+node:internal/fs/utils:345
+    throw err;
+    ^
+
+Error: ENOENT: no such file or directory, open '/Users/christophersebastian/df-custom/df-custom-tools/dataCSV.xlsx - _merge.csv'
+    at Object.openSync (node:fs:585:3)
+    at Object.readFileSync (node:fs:453:35)
+    at parser (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\parser.js:51:34)
+    at Object.<anonymous> (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\orchestration.js:169:32)
+    at Module._compile (node:internal/modules/cjs/loader:1105:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1159:10)
+    at Module.load (node:internal/modules/cjs/loader:981:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:822:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:77:12)
+    at node:internal/main/run_main_module:17:47 {
+  errno: -4058,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/christophersebastian/df-custom/df-custom-tools/dataCSV.xlsx - _merge.csv'
+}
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 1.93s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+Starting test massUpload-StructureA
+Test started at: Tue Nov 15 2022 18:04:57 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 18:09:05 GMT-0500 (Eastern Standard Time)
+Time Taken :247599ms
+Billing Data: [0,475,3,9]
+Starting test massConvoUpload-StructureA
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\StructureA.js:100
+            const q1 = yield topLevelCollection.where("surveyId", "==", conversation.surveyId)
+                                                                                     ^
+
+TypeError: Cannot read properties of undefined (reading 'surveyId')
+    at C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\StructureA.js:100:86
+    at Generator.next (<anonymous>)
+    at C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\StructureA.js:8:71
+    at new Promise (<anonymous>)
+    at __awaiter (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\StructureA.js:4:12)
+    at C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\StructureA.js:99:49
+    at new Promise (<anonymous>)
+    at Object.insertConversation (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\StructureA.js:99:16)
+    at C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\orchestration.js:90:33
+    at Generator.next (<anonymous>)
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 2.10s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+Starting test massUpload-StructureA
+Test started at: Tue Nov 15 2022 20:00:04 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 20:04:09 GMT-0500 (Eastern Standard Time)
+Time Taken :243121ms
+lookupReads :0
+queryReads :7
+updateWrites :3
+createWrites :8
+Starting test massConvoUpload-StructureA
+
+<--- Last few GCs --->
+since start of marking 3184 ms) (average mu = 0.268, current mu = [11392:0000027CA6123F50]   754438 ms: Mark-sweep (reduce) 4077.2 (4142.5) -> 4077.2 (4142.5) MB, 3395.7 / 0.0 ms  (+ 3.2 ms in 2 steps since start of marking, biggest step 2.7 ms, walltime since start of marking 3410 ms) (average mu = 0.178, current mu = [11392:0000027CA6123F50]   755793 ms: Mark-sweep 4078.9 (4144.0) -> 4078.9 (4145.0) MB, 1009.3 / 0.0 ms  (average mu = 0.198, current mu = 0.255) allocation failure GC in old space requested
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
+ 1: 00007FF7B2817C4F v8::internal::CodeObjectRegistry::~CodeObjectRegistry+114207
+ 2: 00007FF7B27A5EC6 DSA_meth_get_flags+65542
+ 3: 00007FF7B27A6D7D node::OnFatalError+301
+ 4: 00007FF7B30DB6CE v8::Isolate::ReportExternalAllocationLimitReached+94
+ 5: 00007FF7B30C5CAD v8::SharedArrayBuffer::Externalize+781
+ 6: 00007FF7B2F6907C v8::internal::Heap::EphemeronKeyWriteBarrierFromCode+1468
+ 7: 00007FF7B2F66194 v8::internal::Heap::CollectGarbage+4244
+ 8: 00007FF7B2F63B10 v8::internal::Heap::AllocateExternalBackingStore+2000
+ 9: 00007FF7B2F88696 v8::internal::Factory::NewFillerObject+214
+10: 00007FF7B2CBAA1A v8::internal::DateCache::Weekday+1466
+11: 00007FF7B31693C1 v8::internal::SetupIsolateDelegate::SetupHeap+494417
+12: 0000027CA7F83399
+error Command failed with exit code 134.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 2.18s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+Starting test massUpload-StructureA
+Test started at: Tue Nov 15 2022 20:25:52 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 20:29:58 GMT-0500 (Eastern Standard Time)
+Time Taken :243454ms
+lookupReads :0
+queryReads :7
+updateWrites :3
+createWrites :8
+Starting test massConvoUpload-StructureA
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\conversion.js:15
+        while (data[k].responseId == data[i].responseId && k < data.length) {
+                       ^
+
+TypeError: Cannot read properties of undefined (reading 'responseId')
+    at conversion (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\conversion.js:15:24)
+    at C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\orchestration.js:91:56
+    at Generator.next (<anonymous>)
+    at C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\orchestration.js:8:71
+    at new Promise (<anonymous>)
+    at __awaiter (C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\orchestration.js:4:12)
+    at C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\orchestration.js:90:39
+    at C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\Monitoring.js:103:13
+    at Generator.next (<anonymous>)
+    at C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest\bin\Monitoring.js:8:71
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 1.90s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+Starting test massUpload-StructureA
+Test started at: Tue Nov 15 2022 20:41:43 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 20:45:48 GMT-0500 (Eastern Standard Time)
+Time Taken :242901ms
+lookupReads :0
+queryReads :7
+updateWrites :3
+createWrites :8
+Starting test massConvoUpload-StructureA
+Test started at: Tue Nov 15 2022 20:49:48 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 20:53:53 GMT-0500 (Eastern Standard Time)
+Time Taken :243290ms
+lookupReads :0
+queryReads :4
+updateWrites :3
+createWrites :39
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 1.99s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+Starting test massUpload-StructureA
+Test started at: Tue Nov 15 2022 21:01:24 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 21:07:11 GMT-0500 (Eastern Standard Time)
+Time Taken :345544ms
+lookupReads :0
+queryReads :612
+updateWrites :62
+createWrites :351
+Starting test massConvoUpload-StructureA
+Test started at: Tue Nov 15 2022 21:11:12 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 21:15:26 GMT-0500 (Eastern Standard Time)
+Time Taken :252926ms
+lookupReads :0
+queryReads :28
+updateWrites :7
+createWrites :315
+Starting test retrieveConvo-StructureA
+Test started at: Tue Nov 15 2022 21:19:27 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 21:23:29 GMT-0500 (Eastern Standard Time)
+Time Taken :240423ms
+lookupReads :0
+queryReads :5
+updateWrites :0
+createWrites :0
+Starting test retrieveSurvey-StructureA
+Test started at: Tue Nov 15 2022 21:27:29 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 21:31:32 GMT-0500 (Eastern Standard Time)
+Time Taken :241009ms
+lookupReads :0
+queryReads :120
+updateWrites :0
+createWrites :0
+Starting test retAll-StructureA
+Test started at: Tue Nov 15 2022 21:35:33 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 21:39:36 GMT-0500 (Eastern Standard Time)
+Time Taken :240808ms
+lookupReads :0
+queryReads :351
+updateWrites :0
+createWrites :0
+Starting test giveAc2Survey-StructureA
+Test started at: Tue Nov 15 2022 21:43:36 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 21:47:38 GMT-0500 (Eastern Standard Time)
+Time Taken :240290ms
+lookupReads :0
+queryReads :1
+updateWrites :1
+createWrites :0
+Starting test getAcSurveys-StructureA
+Test started at: Tue Nov 15 2022 21:51:38 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 21:55:41 GMT-0500 (Eastern Standard Time)
+Time Taken :240173ms
+lookupReads :0
+queryReads :0
+updateWrites :1
+createWrites :0
+Starting test getConvoBetween-StructureA
+Test started at: Tue Nov 15 2022 21:59:41 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 22:03:43 GMT-0500 (Eastern Standard Time)
+Time Taken :240313ms
+lookupReads :0
+queryReads :0
+updateWrites :0
+createWrites :0
+Done in 3980.63s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 1.95s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+Starting test massUpload-StructureA
+Test started at: Tue Nov 15 2022 22:17:31 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 22:23:11 GMT-0500 (Eastern Standard Time)
+Time Taken :337446ms
+lookupReads :0
+queryReads :603
+updateWrites :62
+createWrites :351
+Starting test giveAc2Survey-StructureA
+Test started at: Tue Nov 15 2022 22:27:11 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 22:31:14 GMT-0500 (Eastern Standard Time)
+Time Taken :240284ms
+lookupReads :0
+queryReads :1
+updateWrites :1
+createWrites :0
+Starting test getAcSurveys-StructureA
+Test started at: Tue Nov 15 2022 22:35:14 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 22:39:16 GMT-0500 (Eastern Standard Time)
+Time Taken :240135ms
+lookupReads :0
+queryReads :1
+updateWrites :0
+createWrites :0
+Starting test getConvoBetween-StructureA
+Test started at: Tue Nov 15 2022 22:43:16 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 22:47:18 GMT-0500 (Eastern Standard Time)
+Time Taken :240165ms
+lookupReads :0
+queryReads :0
+updateWrites :0
+createWrites :0
+Starting test getConvoBetween-StructureA
+Test started at: Tue Nov 15 2022 22:51:19 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 22:55:21 GMT-0500 (Eastern Standard Time)
+Time Taken :240156ms
+lookupReads :0
+queryReads :0
+updateWrites :0
+createWrites :0
+Done in 2510.01s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn build
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ tsc
+Done in 1.91s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>yarn orch
+yarn run v1.22.19
+warning package.json: License should be a valid SPDX license expression
+warning ..\..\..\..\..\..\package.json: No license field
+$ node bin/orchestration.js
+Starting test massUpload-StructureB
+Test started at: Tue Nov 15 2022 23:01:32 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 23:06:59 GMT-0500 (Eastern Standard Time)
+Time Taken :325142ms
+lookupReads :0
+queryReads :287
+updateWrites :287
+createWrites :349
+Starting test massConvoUpload-StructureB
+Test started at: Tue Nov 15 2022 23:10:59 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 23:15:20 GMT-0500 (Eastern Standard Time)
+Time Taken :258544ms
+lookupReads :0
+queryReads :0
+updateWrites :0
+createWrites :336
+Starting test retrieveConvo-StructureB
+Test started at: Tue Nov 15 2022 23:19:20 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 23:23:22 GMT-0500 (Eastern Standard Time)
+Time Taken :240261ms
+lookupReads :0
+queryReads :4
+updateWrites :0
+createWrites :0
+Starting test retrieveSurvey-StructureB
+Test started at: Tue Nov 15 2022 23:27:23 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 23:31:25 GMT-0500 (Eastern Standard Time)
+Time Taken :240475ms
+lookupReads :0
+queryReads :90
+updateWrites :0
+createWrites :0
+Starting test retAll-StructureB
+Test started at: Tue Nov 15 2022 23:35:26 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 23:39:28 GMT-0500 (Eastern Standard Time)
+Time Taken :240521ms
+lookupReads :0
+queryReads :349
+updateWrites :0
+createWrites :0
+Starting test giveAc2Survey-StructureB
+Test started at: Tue Nov 15 2022 23:43:28 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 23:47:31 GMT-0500 (Eastern Standard Time)
+Time Taken :240587ms
+lookupReads :1
+queryReads :12
+updateWrites :7
+createWrites :0
+Starting test getAcSurveys-StructureB
+Test started at: Tue Nov 15 2022 23:51:31 GMT-0500 (Eastern Standard Time)
+Test ended at: Tue Nov 15 2022 23:55:33 GMT-0500 (Eastern Standard Time)
+Time Taken :240168ms
+lookupReads :1
+queryReads :12
+updateWrites :0
+createWrites :0
+Starting test getConvoBetween-StructureB
+Test started at: Tue Nov 15 2022 23:59:34 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 00:03:36 GMT-0500 (Eastern Standard Time)
+Time Taken :240305ms
+lookupReads :0
+queryReads :5
+updateWrites :0
+createWrites :0
+Starting test massUpload-StructureC
+Test started at: Wed Nov 16 2022 00:07:36 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 00:12:41 GMT-0500 (Eastern Standard Time)
+Time Taken :302585ms
+lookupReads :0
+queryReads :603
+updateWrites :327
+createWrites :30
+Starting test massConvoUpload-StructureC
+Test started at: Wed Nov 16 2022 00:16:41 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 00:20:53 GMT-0500 (Eastern Standard Time)
+Time Taken :250283ms
+lookupReads :0
+queryReads :29
+updateWrites :8
+createWrites :33
+Starting test retrieveConvo-StructureC
+Test started at: Wed Nov 16 2022 00:24:53 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 00:28:56 GMT-0500 (Eastern Standard Time)
+Time Taken :240387ms
+lookupReads :0
+queryReads :2
+updateWrites :0
+createWrites :0
+Starting test retrieveSurvey-StructureC
+Test started at: Wed Nov 16 2022 00:32:56 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 00:36:58 GMT-0500 (Eastern Standard Time)
+Time Taken :240347ms
+lookupReads :0
+queryReads :10
+updateWrites :0
+createWrites :0
+Starting test retAll-StructureC
+Test started at: Wed Nov 16 2022 00:40:59 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 00:45:01 GMT-0500 (Eastern Standard Time)
+Time Taken :240437ms
+lookupReads :0
+queryReads :27
+updateWrites :0
+createWrites :0
+Starting test giveAc2Survey-StructureC
+Test started at: Wed Nov 16 2022 00:49:02 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 00:53:04 GMT-0500 (Eastern Standard Time)
+Time Taken :240508ms
+lookupReads :0
+queryReads :1
+updateWrites :1
+createWrites :0
+Starting test getAcSurveys-StructureC
+Test started at: Wed Nov 16 2022 00:57:04 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 01:01:06 GMT-0500 (Eastern Standard Time)
+Time Taken :240137ms
+lookupReads :0
+queryReads :1
+updateWrites :0
+createWrites :0
+Starting test getConvoBetween-StructureC
+Test started at: Wed Nov 16 2022 01:05:07 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 01:09:09 GMT-0500 (Eastern Standard Time)
+Time Taken :240188ms
+lookupReads :0
+queryReads :0
+updateWrites :0
+createWrites :0
+Starting test massUpload-StructureD
+Test started at: Wed Nov 16 2022 01:13:09 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 01:17:45 GMT-0500 (Eastern Standard Time)
+Time Taken :273486ms
+lookupReads :0
+queryReads :0
+updateWrites :0
+createWrites :249
+Starting test massConvoUpload-StructureD
+Test started at: Wed Nov 16 2022 01:21:45 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 01:25:53 GMT-0500 (Eastern Standard Time)
+Time Taken :246185ms
+lookupReads :0
+queryReads :0
+updateWrites :0
+createWrites :318
+Starting test retrieveConvo-StructureD
+Test started at: Wed Nov 16 2022 01:29:53 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 01:33:56 GMT-0500 (Eastern Standard Time)
+Time Taken :240315ms
+lookupReads :0
+queryReads :107
+updateWrites :0
+createWrites :0
+Starting test retrieveSurvey-StructureD
+Test started at: Wed Nov 16 2022 01:37:56 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 01:41:58 GMT-0500 (Eastern Standard Time)
+Time Taken :240301ms
+lookupReads :0
+queryReads :107
+updateWrites :0
+createWrites :0
+Starting test retAll-StructureD
+Test started at: Wed Nov 16 2022 01:45:58 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 01:50:01 GMT-0500 (Eastern Standard Time)
+Time Taken :240459ms
+lookupReads :0
+queryReads :318
+updateWrites :0
+createWrites :0
+Starting test giveAc2Survey-StructureD
+Test started at: Wed Nov 16 2022 01:54:01 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 01:58:04 GMT-0500 (Eastern Standard Time)
+Time Taken :240916ms
+lookupReads :0
+queryReads :107
+updateWrites :106
+createWrites :0
+Starting test getAcSurveys-StructureD
+Test started at: Wed Nov 16 2022 02:02:04 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 02:06:06 GMT-0500 (Eastern Standard Time)
+Time Taken :240279ms
+lookupReads :0
+queryReads :107
+updateWrites :0
+createWrites :0
+Starting test getConvoBetween-StructureD
+Test started at: Wed Nov 16 2022 02:10:07 GMT-0500 (Eastern Standard Time)
+Test ended at: Wed Nov 16 2022 02:14:09 GMT-0500 (Eastern Standard Time)
+Time Taken :240158ms
+lookupReads :0
+queryReads :10
+updateWrites :0
+createWrites :0
+Done in 11797.42s.
+
+C:\Users\japan\Documents\Projects\Negotiation Chatbot\df-custom-tools\FirestoreTesting\FirestoreInterfaceTest>

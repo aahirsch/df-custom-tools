@@ -203,27 +203,38 @@ async function getConvoBetween(structure: DatabaseInterface, structureName:strin
 
 
 // get data
-let data  = parser('C:/Users/japan/Documents/Projects/Negotiation Chatbot/df-custom-tools/dataCSV.xlsx - _merge.csv');
+ let data  = parser('C:/Users/japan/Documents/Projects/Negotiation Chatbot/df-custom-tools/dataCSV.xlsx - _merge.csv');
 
-async function centralizedWrites(structure: DatabaseInterface, structureName:string, topLevelCollection: string) {
-  const massUploadRef = await massUpload(structure,structureName,topLevelCollection,data);
-  const massConvoUploadRef = await massConvoUpload(structure,structureName,topLevelCollection,data);
-  await retrieveConvo(structure,structureName,massUploadRef, data[0].surveyId as string, data[0].agentId as string, data[0].responseId as string)
-  await retrieveSurvey(structure,structureName,massUploadRef,data[0].surveyId as string)
-  await retAll(structure,structureName,massUploadRef)
-  await giveAc2Survey(structure,structureName,massUploadRef,"Zuckerberg",[data[0].surveyId] as string[])
-  await getAcSurveys(structure,structureName, massUploadRef, "Zuckerberg")
-  //await getConvoBetween(structure,structureName, massUploadRef, new Date(data[0].timestamp as string), new Date(data[1].timestamp as string));
+// async function centralizedWrites(structure: DatabaseInterface, structureName:string, topLevelCollection: string) {
+//   const massUploadRef = await massUpload(structure,structureName,topLevelCollection,data);
+//   const massConvoUploadRef = await massConvoUpload(structure,structureName,topLevelCollection,data);
+//   await retrieveConvo(structure,structureName,massUploadRef, data[0].surveyId as string, data[0].agentId as string, data[0].responseId as string)
+//   await retrieveSurvey(structure,structureName,massUploadRef,data[0].surveyId as string)
+//   await retAll(structure,structureName,massUploadRef)
+//   await giveAc2Survey(structure,structureName,massUploadRef,"Zuckerberg",[data[0].surveyId] as string[])
+//   await getAcSurveys(structure,structureName, massUploadRef, "Zuckerberg")
+//   //await getConvoBetween(structure,structureName, massUploadRef, new Date(data[0].timestamp as string), new Date(data[1].timestamp as string));
+// }
+
+
+// //call tests
+
+// async function testAll() {
+//   //await centralizedWrites(StructureA, "StructureA", "testingTrials")
+//   await centralizedWrites(StructureB, "StructureB", "testingTrials")
+//   await centralizedWrites(StructureC, "StructureC", "testingTrials")
+//   await centralizedWrites(StructureD, "StructureD", "testingTrials")
+// }
+
+//testAll()
+
+const uploadTestData = async () => {
+  const convos = conversion(data);
+  const myCollection = db.collection("webAppTest")
+  for (let i = 0; i<convos.length; i++){
+    await StructureC.insertConversation(myCollection,convos[i])
+  }
+
 }
 
-
-//call tests
-
-async function testAll() {
-  //await centralizedWrites(StructureA, "StructureA", "testingTrials")
-  await centralizedWrites(StructureB, "StructureB", "testingTrials")
-  await centralizedWrites(StructureC, "StructureC", "testingTrials")
-  await centralizedWrites(StructureD, "StructureD", "testingTrials")
-}
-
-testAll()
+uploadTestData()
