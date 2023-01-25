@@ -5,3 +5,5 @@ heartschat-prod-a505-9599eda00cef.json
 FirestoreTesting/FirestoreInterfaceTest/node_modules/*
 FirestoreTesting/FirestoreInterfaceTest/heartschat-prod-creds.json
 FirestoreTesting/FirestoreInterfaceTest/bin/*
+TextGeneration/Negotiate-GPT/node_modules/*
+TextGeneration/Negotiate-GPT/bin/*
