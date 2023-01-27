@@ -69,7 +69,8 @@ const StructureC:DatabaseInterface = {
     })
 
   },
-
+// I think I need to fix this to take into account the two new pieces of data we are adding, I will
+// do this before running tests
   insertConversation: (topLevelCollection:CollectionReference, conversation: Conversation): Promise<void> =>{
     //the idea here is that we only need to find the collection for the conversation once, and therefore we can gain a little efficiently over multiple calls of insertMessage
 
