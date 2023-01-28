@@ -2,7 +2,9 @@ import readline from "readline"
 import CallGPT3 from "../src/CallGPT3"
 import Config from "../src/Config"
 import Conversation from "../src/Conversation"
-import ControlSystem from "./ControlSystem"
+import ControlSystem from "../src/ControlSystem"
+import LanguageSpecifiedCondition, { CheckOn, NeedToInclude } from "../src/Conditions/LanguageSpecifiedCondition"
+import SubmitBotInstruction from "../src/Actions/SubmitBotInstruction"
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -38,6 +40,18 @@ const activeConfig:Config = {
 }
 
 const activeControlSystem = new ControlSystem();
+
+const buyerMakesAnOffer = new LanguageSpecifiedCondition("Did the Buyer made an offer?", CheckOn.AfterUserMessage, CallGPT3,NeedToInclude.PreambleAndHistory)
+
+const sellerNeedsTheBathroom = new SubmitBotInstruction("The Seller needs to go to the bathroom and should say so in their next message")
+
+const buyerMentionedPainting = new LanguageSpecifiedCondition("Did the Buyer mention Hearts of Spring?", CheckOn.AfterUserMessage, CallGPT3,NeedToInclude.PreambleAndHistory)
+
+const sellerSaysBoom = new SubmitBotInstruction('The Seller should start their next message with "Boom!"')
+
+activeControlSystem.addControlPair(buyerMakesAnOffer,sellerNeedsTheBathroom)
+
+activeControlSystem.addControlPair(buyerMentionedPainting,sellerSaysBoom)
 
 const conversation:Conversation = new Conversation(activeConfig,CallGPT3,activeControlSystem)
 

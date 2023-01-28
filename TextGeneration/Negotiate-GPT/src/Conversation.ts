@@ -20,22 +20,26 @@ class Conversation {
   sendMessage(message:string):Promise<string>{
     this.history+= "\n" + this.config.humanPartyName + ": " + message 
 
-    //do checks
+    return new Promise<string>(async (resolve, reject) => {
 
-    //add any instructions
+      //do checks
+      await this.controlSystem.onUserMessage(this)
 
-    //get response from API
-    return new Promise<string>((resolve, reject) => {
       const prompt = this.config.preamble + "\n" + this.history +"\n" + this.config.aiPartyName + ": "
-      this.callAPI(
+      const response = await this.callAPI(
         prompt, this.config.temperature,
         this.config.maxOutputLength,
         [this.config.humanPartyName+":",this.config.aiPartyName+":"]
-        ).then((response:string) => {
-          this.history+= "\n" + this.config.aiPartyName + ": " + response
-          this.messages.push([message, response])
-          resolve(response)
-      })
+        )
+
+      this.history+= "\n" + this.config.aiPartyName + ": " + response
+      this.messages.push([message, response])
+
+      //do checks
+      await this.controlSystem.onBotMessage(this)
+
+      resolve(response)
+
     })
   } 
 

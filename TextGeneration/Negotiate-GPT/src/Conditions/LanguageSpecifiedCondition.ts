@@ -1,5 +1,6 @@
-import Condition from "./Condition";
-import Conversation from "./Conversation";
+import {Condition, InvalidJSONForCondition} from "./Condition";
+import Conversation from "../Conversation";
+import ConditionKeys from "./ConditionKeys";
 
 enum CheckOn{
   AfterUserMessage,
@@ -17,7 +18,7 @@ enum NeedToInclude{
 
 class LanguageSpecifiedCondition implements Condition{
 
-  callAPI:(prompt:string, temperature:number, maxTokens: number, stop:Array<string>) => Promise<string>
+  callAPI: CallAPIFunction
 
   languageSpecification:string
 
@@ -32,16 +33,70 @@ class LanguageSpecifiedCondition implements Condition{
 
   checkOn:CheckOn
 
+  static fromJSON(json:any, callAPI:CallAPIFunction):LanguageSpecifiedCondition{
+
+    if (json.languageSpecification == undefined){
+      throw new InvalidJSONForCondition(json, "languageSpecification")
+    }
+
+    var checkOn:CheckOn
+
+    switch(json.checkOn){
+      case "AfterUserMessage":
+        checkOn = CheckOn.AfterUserMessage
+        break
+      case "AfterBotMessage":
+        checkOn = CheckOn.AfterBotMessage
+        break
+      case "Both":
+        checkOn = CheckOn.Both
+        break
+      default:
+        throw new InvalidJSONForCondition(json, "checkOn")
+    }
+
+    var needToInclude:NeedToInclude
+
+    switch(json.needToInclude){
+      case "Preamble":
+        needToInclude = NeedToInclude.Preamble
+        break
+      case "History":
+        needToInclude = NeedToInclude.History
+        break
+      case "PreambleAndHistory":
+        needToInclude = NeedToInclude.PreambleAndHistory
+        break
+      case "LastMessage":
+        needToInclude = NeedToInclude.LastMessage
+        break
+      case "LastNMessages":
+        needToInclude = NeedToInclude.LastNMessages
+        break
+      default:
+        throw new InvalidJSONForCondition(json, "needToInclude")
+    }
+
+    return new LanguageSpecifiedCondition(
+      json.languageSpecification,
+      checkOn,
+      callAPI,
+      needToInclude
+    )
+
+  }
+
   constructor(
     languageSpecification:string,
     checkOn:CheckOn,
-    callAPI:(prompt:string, temperature:number, maxTokens: number, stop:Array<string>) => Promise<string>,
+    callAPI:CallAPIFunction,
     needToInclude:NeedToInclude = NeedToInclude.History,
     n:number = 1
     ){
     this.languageSpecification = languageSpecification
     this.callAPI = callAPI
     this.checkOn=checkOn
+    this.needToInclude = needToInclude
   }
 
   init():void {
@@ -49,6 +104,11 @@ class LanguageSpecifiedCondition implements Condition{
       this.lastState = false
     }
   }
+
+  //static fromStr(s:string):LanguageSpecifiedCondition{
+
+    //return new LanguageSpecifiedCondition()
+  //}
 
   check(conversation:Conversation):Promise<boolean> {
     if(this.persistent && this.lastState){
@@ -102,9 +162,13 @@ class LanguageSpecifiedCondition implements Condition{
       //we allow 5 tokens so that the AI can spit out some spacing characters
       //but not too many that if the stop sequences fail it will spit out a lot
       //remember stop sequences are not included in the output.
-      this.callAPI(prompt, 0.0, 5,[".",","]).then((response:string) => {
+      this.askAPI(prompt).then((response:string) => {
         const processedResponse = response.trim().toLowerCase()
         if(processedResponse=="yes"){
+
+          //#FF0000 Temporary line
+          console.log("\t condition met - "+this.languageSpecification)
+
           if(this.persistent){this.lastState=true}
           resolve(true)
         }
@@ -112,13 +176,19 @@ class LanguageSpecifiedCondition implements Condition{
           resolve(false)
         }
         else{
-          //maybe throw some error
+          //maybe throw some error here, the response needs to be logged
           // for now just say no
           resolve(false)
         }
       })
     })
   }
+
+  //the following function is separated for testing and debugging purposes
+  askAPI(prompt:string):Promise<string> {
+    return this.callAPI(prompt, 0.0, 5,[".",","])
+  }
+
 
   afterUserMessageCheck(conversation: Conversation): Promise<boolean> {
     if(this.persistent && this.lastState){
@@ -142,8 +212,10 @@ class LanguageSpecifiedCondition implements Condition{
       return Promise.resolve(false)
     }
   }
-
-
 }
 
-export {LanguageSpecifiedCondition, CheckOn}
+ConditionKeys.set("LanguageSpecifiedCondition", LanguageSpecifiedCondition.fromJSON)
+
+export default LanguageSpecifiedCondition
+
+export {LanguageSpecifiedCondition, CheckOn,NeedToInclude}
