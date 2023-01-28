@@ -1,0 +1,56 @@
+{
+  "preamble": "FILE HeartsChatSeller",
+  "humanPartyName": "Buyer",
+  "aiPartyName":"Seller",
+  "temperature": 0.6,
+  "maxOutputLength": 150,
+  "controlSystem": {
+    "conditions":[
+
+      {
+        "name":"buyerMakesAnOffer",
+        "type":"LanguageSpecifiedCondition",
+        "languageSpecification":"Did the Buyer make an offer?",
+        "checkOn":"AfterUserMessage",
+        "needToInclude":"PreambleAndHistory"
+      },
+
+      {
+        "name":"buyerMentionsPainting",
+        "type":"LanguageSpecifiedCondition",
+        "languageSpecification":"Did the Buyer mention Hearts of Spring?",
+        "checkOn":"AfterUserMessage",
+        "needToInclude":"PreambleAndHistory",
+        "triggerOnce":true
+      }
+
+    ],
+    "actions":[
+      
+      {
+        "name":"sellerNeedsTheBathroom",
+        "type":"SubmitBotInstruction",
+        "instruction":"The Seller needs to go to the bathroom and should say so in their next message." 
+      },
+
+      {
+        "name":"sellerSayBoom",
+        "type":"SubmitBotInstruction",
+        "instruction":"The Seller should start their next message with 'Boom!'"
+      }
+    ],
+    "controlPairs":[
+
+      {
+        "condition":"buyerMakesAnOffer",
+        "action":"sellerNeedsTheBathroom"
+      },
+
+      {
+        "condition":"buyerMentionsPainting",
+        "action":"sellerSayBoom"
+      }
+
+    ]
+  }
+}

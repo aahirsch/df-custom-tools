@@ -23,6 +23,9 @@ class LanguageSpecifiedCondition implements Condition{
   languageSpecification:string
 
   persistent:boolean = false
+
+  triggerOnce:boolean = false
+
   //only applies if persistent
   lastState:boolean | null = null
 
@@ -111,9 +114,6 @@ class LanguageSpecifiedCondition implements Condition{
   //}
 
   check(conversation:Conversation):Promise<boolean> {
-    if(this.persistent && this.lastState){
-      return Promise.resolve(true)
-    }
 
     var prompt =""
     
@@ -169,15 +169,18 @@ class LanguageSpecifiedCondition implements Condition{
           //#FF0000 Temporary line
           console.log("\t condition met - "+this.languageSpecification)
 
-          if(this.persistent){this.lastState=true}
+          if(this.persistent&&!this.triggerOnce){this.lastState=true}
+          this.lastState=true
           resolve(true)
         }
         else if (processedResponse=="no"){
+          this.lastState=false
           resolve(false)
         }
         else{
           //maybe throw some error here, the response needs to be logged
           // for now just say no
+          this.lastState=false
           resolve(false)
         }
       })
@@ -191,8 +194,8 @@ class LanguageSpecifiedCondition implements Condition{
 
 
   afterUserMessageCheck(conversation: Conversation): Promise<boolean> {
-    if(this.persistent && this.lastState){
-      return Promise.resolve(true)
+    if(this.persistent&&this.lastState){
+      return Promise.resolve(!this.triggerOnce)
     }
     if(this.checkOn==CheckOn.AfterUserMessage || this.checkOn==CheckOn.Both){
       return this.check(conversation)
@@ -201,9 +204,10 @@ class LanguageSpecifiedCondition implements Condition{
       return Promise.resolve(false)
     }
   }
+  
   afterBotMessageCheck(conversation: Conversation): Promise<boolean>{
-    if(this.persistent && this.lastState){
-      return Promise.resolve(true)
+    if(this.persistent&&this.lastState){
+      return Promise.resolve(!this.triggerOnce)
     }
     if(this.checkOn==CheckOn.AfterBotMessage || this.checkOn==CheckOn.Both){
       return this.check(conversation)
@@ -212,9 +216,19 @@ class LanguageSpecifiedCondition implements Condition{
       return Promise.resolve(false)
     }
   }
+
+  setPersistent(persistent: boolean){
+    this.persistent = persistent
+  }
+
+  setTriggerOnce(triggerOnce: boolean){
+    this.triggerOnce = triggerOnce
+    if(triggerOnce){
+      this.persistent = true
+    }
+  }
 }
 
-ConditionKeys.set("LanguageSpecifiedCondition", LanguageSpecifiedCondition.fromJSON)
 
 export default LanguageSpecifiedCondition
 

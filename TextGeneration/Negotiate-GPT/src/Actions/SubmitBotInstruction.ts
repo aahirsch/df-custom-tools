@@ -27,6 +27,4 @@ class SubmitBotInstruction implements Action{
 
 }
 
-ActionKeys.set("SubmitBotInstruction", SubmitBotInstruction.fromJSON)
-
 export default SubmitBotInstruction

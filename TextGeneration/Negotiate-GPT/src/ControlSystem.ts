@@ -1,9 +1,21 @@
 import {Action, InvalidJSONForAction} from "./Actions/Action"
 import CallGPT3 from "./CallGPT3"
 import {Condition, InvalidJSONForCondition} from "./Conditions/Condition"
+import Conversation from "./Conversation"
+
+
 import ConditionKeys from "./Conditions/ConditionKeys"
 import ActionKeys from "./Actions/ActionKeys"
-import Conversation from "./Conversation"
+
+//conditions
+import LanguageSpecifiedCondition from "./Conditions/LanguageSpecifiedCondition"
+ConditionKeys.set("LanguageSpecifiedCondition", LanguageSpecifiedCondition.fromJSON)
+
+//actions
+import SubmitBotInstruction from "./Actions/SubmitBotInstruction"
+ActionKeys.set("SubmitBotInstruction", SubmitBotInstruction.fromJSON)
+
+
 
 class InvalidJSONForControlSystem extends Error{
   constructor(json:any, missingProperty:string){
@@ -53,7 +65,21 @@ class ControlSystem{
         throw new InvalidJSONForControlSystem(json, `CONDITION.type ${type}`)
       }
 
-      conditionMap.set(name, ConditionKeys.get(type)!(conditionJSON, CallGPT3))
+      const condition = ConditionKeys.get(type)!(conditionJSON, CallGPT3)
+
+      const persistent = conditionJSON.persistent
+
+      if(persistent != undefined && typeof persistent == "boolean"){
+        condition.setPersistent(persistent)
+      }
+
+      const triggerOnce = conditionJSON.triggerOnce
+
+      if(triggerOnce != undefined && typeof triggerOnce == "boolean"){
+        condition.setTriggerOnce(triggerOnce)
+      }
+
+      conditionMap.set(name, condition)
 
     })
 
@@ -85,12 +111,12 @@ class ControlSystem{
       }
       const condition = conditionMap.get(conditionName)
 
-      const actionName = controlPairJSON.actions
+      const actionName = controlPairJSON.action
       if(actionName == undefined){
-        throw new InvalidJSONForControlSystem(json, "CONTROL_PAIR.actions")
+        throw new InvalidJSONForControlSystem(json, "CONTROL_PAIR.action")
       }
       if(!actionMap.has(actionName)){
-        throw new InvalidJSONForControlSystem(json, `CONTROL_PAIR.actions ${actionName}`)
+        throw new InvalidJSONForControlSystem(json, `CONTROL_PAIR.action ${actionName}`)
       }
       const action = actionMap.get(actionName)
 

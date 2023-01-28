@@ -3,7 +3,12 @@ type Config = {
   humanPartyName:string,
   aiPartyName:string,
   temperature:number,
-  maxOutputLength:number
+  maxOutputLength:number,
+  controlSystem:{
+    conditions:any[],
+    actions:any[],
+    controlParis:any[]
+  }
 }
 
 export default Config
