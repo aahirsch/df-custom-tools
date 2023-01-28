@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node bin/src/index.js",
     "test": "node bin/testing/testInTerminal.js",
+    "testLangCondition": "node bin/testing/testLanguageCondition.js",
     "build": "tsc"
   },
   "private": true,
