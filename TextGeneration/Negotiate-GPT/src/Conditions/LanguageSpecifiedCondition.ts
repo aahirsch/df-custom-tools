@@ -1,6 +1,5 @@
 import {Condition, InvalidJSONForCondition} from "./Condition";
 import Conversation from "../Conversation";
-import ConditionKeys from "./ConditionKeys";
 
 enum CheckOn{
   AfterUserMessage,
@@ -20,6 +19,7 @@ class LanguageSpecifiedCondition implements Condition{
 
   callAPI: CallAPIFunction
 
+  //NOTE this should not contain any number and thus should not be encoded
   languageSpecification:string
 
   persistent:boolean = false
@@ -108,26 +108,24 @@ class LanguageSpecifiedCondition implements Condition{
     }
   }
 
-  //static fromStr(s:string):LanguageSpecifiedCondition{
-
-    //return new LanguageSpecifiedCondition()
-  //}
-
   check(conversation:Conversation):Promise<boolean> {
 
     var prompt =""
+
+    prompt += conversation.getCodeDescriptor()
+    prompt += "\n\n"
     
     var lines =[]
 
     switch(this.needToInclude){
       case NeedToInclude.Preamble:
-        prompt+=conversation.config.preamble
+        prompt+=conversation.basicPreamble
         break
       case NeedToInclude.History:
         prompt+=conversation.history
         break
       case NeedToInclude.PreambleAndHistory:
-        prompt+=conversation.config.preamble
+        prompt+=conversation.basicPreamble
         prompt+="\n"
         prompt+=conversation.history
         break

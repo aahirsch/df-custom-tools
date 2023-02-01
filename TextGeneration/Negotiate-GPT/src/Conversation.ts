@@ -1,13 +1,23 @@
 import Config from "./Config";
 import ControlSystem from "./ControlSystem";
+import { normalize } from "./TextProcessing/normalize";
+import NumberCoding from "./TextProcessing/NumberCoding";
 
 class Conversation {
-  config:Config
-  callAPI:(prompt:string, temperature:number, maxTokens: number, stop:Array<string>) => Promise<string>
-  controlSystem:ControlSystem
-  messages:Array<[string,string]> = []
-  history:string =""
-  pendingInstructions:Array<string> =new Array<string>()
+  public config:Config
+  //NOTE this contains raw(uncoded) messages
+  public messages:Array<[string,string]> = []
+  public history:string =""
+  //the preamble without codes
+  public basicPreamble:string
+
+
+  private callAPI:(prompt:string, temperature:number, maxTokens: number, stop:Array<string>) => Promise<string>
+  private controlSystem:ControlSystem
+  private pendingInstructions:Array<string> =new Array<string>()
+  private numberCode:NumberCoding
+
+  
 
   constructor(
     config:Config, 
@@ -16,11 +26,35 @@ class Conversation {
     this.config = config
     this.callAPI = callAPI
     this.controlSystem = ControlSystem.fromJSON(config.controlSystem)
+    this.numberCode = new NumberCoding()
+
+    //add value codes
+    this.basicPreamble=this.numberCode.encode(normalize(config.preamble))
+
   }
 
-  sendMessage(message:string):Promise<string>{
+  //produces a string that communicates the code to the API
+  public getCodeDescriptor():string{
+    var out=""
+    this.numberCode.orderedCodes.forEach((value) => {
+      out+=value + " < "
+    })
+    out = out.substring(0, out.length-3)
+    return  out
+  }
 
-    this.history+= "\n" + this.config.humanPartyName + ": " + message 
+  public getFullPreamble():string{
+    var out = this.getCodeDescriptor()
+    out+="\n\n"
+    out+=this.basicPreamble
+    return out
+  }
+
+  public sendMessage(message:string):Promise<string>{
+
+    const processedMessage = this.numberCode.encode(normalize(message))
+
+    this.history+= "\n" + this.config.humanPartyName + ": " + processedMessage 
 
     return new Promise<string>(async (resolve, reject) => {
 
@@ -38,7 +72,7 @@ class Conversation {
       }
       this.pendingInstructions= new Array<string>()
 
-      const prompt = this.config.preamble + "\n" + this.history +"\n" + this.config.aiPartyName + ": "
+      const prompt = this.getFullPreamble() + "\n" + this.history +"\n" + this.config.aiPartyName + ": "
       const response = (await this.callAPI(
         prompt, this.config.temperature,
         this.config.maxOutputLength,
@@ -56,11 +90,9 @@ class Conversation {
     })
   } 
 
-  submitInstruction(instruction:string):void {
-    this.pendingInstructions.push(instruction)
+  public submitInstruction(instruction:string):void {
+    this.pendingInstructions.push(this.numberCode.encode(normalize(instruction)))
   }
-
-
 }
 
 

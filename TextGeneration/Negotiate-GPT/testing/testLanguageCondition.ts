@@ -1,6 +1,17 @@
 import readline from "readline"
 import CallGPT3 from "../src/CallGPT3"
 import { LanguageSpecifiedCondition, CheckOn, NeedToInclude } from "../src/Conditions/LanguageSpecifiedCondition"
+import { normalize } from "../src/TextProcessing/normalize"
+import NumberCoding from "../src/TextProcessing/NumberCoding"
+
+const code = new NumberCoding()
+
+console.log(code.encode(normalize("Hi, I'd like to make an offer of $100,000. Do you think that's fair?")))
+console.log(code.encode(normalize("Hi, I'd like to make an offer of one hundred thousand, two hundred dollars. Do you think that's fair?")))
+
+
+console.log(code.decode(code.encode(normalize("Hi, I'd like to make an offer of $100,000. Do you think that's fair?"))))
+console.log(code.decode(code.encode(normalize("Hi, I'd like to make an offer of one hundred thousand two hundred dollars. Do you think that's fair?"))))
 
 const rl = readline.createInterface({
   input: process.stdin,

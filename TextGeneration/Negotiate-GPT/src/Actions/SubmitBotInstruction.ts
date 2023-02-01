@@ -1,6 +1,5 @@
 import Conversation from "../Conversation";
 import {Action, InvalidJSONForAction} from "./Action";
-import ActionKeys from "./ActionKeys";
 
 class SubmitBotInstruction implements Action{
 
