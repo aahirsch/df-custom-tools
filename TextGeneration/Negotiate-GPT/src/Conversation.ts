@@ -80,12 +80,15 @@ class Conversation {
         )).trim()
 
       this.history+= "\n" + this.config.aiPartyName + ": " + response
-      this.messages.push([message, response])
+
+      const decodedResponse = this.numberCode.decode(response)
+
+      this.messages.push([message, decodedResponse])
 
       //do checks
       await this.controlSystem.onBotMessage(this)
 
-      resolve(response)
+      resolve(decodedResponse)
 
     })
   } 
