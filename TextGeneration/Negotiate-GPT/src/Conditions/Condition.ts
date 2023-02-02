@@ -22,13 +22,11 @@ interface Condition {
   //clear for new conversation
   init: () => void;
 
-  setPersistent: (persistent: boolean) => void;
+  afterUserMessageCheck: (conversation: Conversation, ...args:any[]) => Promise<boolean>;
 
-  setTriggerOnce: (triggerOnce: boolean) => void;
+  afterBotMessageCheck: (conversation: Conversation, ...args:any[]) => Promise<boolean>;
 
-  afterUserMessageCheck: (conversation: Conversation) => Promise<boolean>;
-
-  afterBotMessageCheck: (conversation: Conversation) => Promise<boolean>;
+  isCompound: () => boolean;
 
 }
 

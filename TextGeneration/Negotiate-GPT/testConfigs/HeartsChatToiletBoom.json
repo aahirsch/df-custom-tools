@@ -4,6 +4,23 @@
   "aiPartyName":"Seller",
   "temperature": 0.6,
   "maxOutputLength": 150,
+  "pricingModel":{
+    "type":"PriceBelow",
+    "parameters":[
+      {
+        "name":"limitPrice",
+        "value":100000
+      },
+      {
+        "name":"nextOffer",
+        "value":100
+      },
+      {
+        "name":"offerStep",
+        "value":100
+      }
+    ]
+  },
   "controlSystem": {
     "conditions":[
 

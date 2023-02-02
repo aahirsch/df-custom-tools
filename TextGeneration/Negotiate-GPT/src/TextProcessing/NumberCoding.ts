@@ -11,6 +11,8 @@ class NumberCoding {
   //ascending
   public orderedCodes: Array<string> = new Array<string>();
 
+  public findCodeRegex = /\$[a-z]+\$/g;
+
   private insertCode(code:string){
     for(let i=0;i<this.orderedCodes.length;i++){
       if(this.backwardCodeMap.get(this.orderedCodes[i])!>this.backwardCodeMap.get(code)!){
@@ -66,6 +68,10 @@ class NumberCoding {
       input = input.replace(code, this.backwardCodeMap.get(code)!.toString());
     });
     return input;
+  }
+
+  public getNumberFromCode(code:string):number|undefined{
+    return this.backwardCodeMap.get(code);
   }
 }
 

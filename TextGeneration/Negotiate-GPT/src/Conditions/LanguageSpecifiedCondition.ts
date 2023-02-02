@@ -1,5 +1,6 @@
-import {Condition, InvalidJSONForCondition} from "./Condition";
+import {InvalidJSONForCondition} from "./Condition";
 import Conversation from "../Conversation";
+import AbstractCondition from "./AbstractCondition";
 
 enum CheckOn{
   AfterUserMessage,
@@ -15,47 +16,23 @@ enum NeedToInclude{
   LastNMessages
 }
 
-class LanguageSpecifiedCondition implements Condition{
+class LanguageSpecifiedCondition extends AbstractCondition{
 
   callAPI: CallAPIFunction
 
   //NOTE this should not contain any number and thus should not be encoded
   languageSpecification:string
 
-  persistent:boolean = false
-
-  triggerOnce:boolean = false
-
-  //only applies if persistent
-  lastState:boolean | null = null
 
   needToInclude:NeedToInclude = NeedToInclude.History
 
   //only applies if needToInclude == NeedToInclude.LastNMessages
   n:number = 1
 
-  checkOn:CheckOn
-
   static fromJSON(json:any, callAPI:CallAPIFunction):LanguageSpecifiedCondition{
 
     if (json.languageSpecification == undefined){
       throw new InvalidJSONForCondition(json, "languageSpecification")
-    }
-
-    var checkOn:CheckOn
-
-    switch(json.checkOn){
-      case "AfterUserMessage":
-        checkOn = CheckOn.AfterUserMessage
-        break
-      case "AfterBotMessage":
-        checkOn = CheckOn.AfterBotMessage
-        break
-      case "Both":
-        checkOn = CheckOn.Both
-        break
-      default:
-        throw new InvalidJSONForCondition(json, "checkOn")
     }
 
     var needToInclude:NeedToInclude
@@ -80,13 +57,17 @@ class LanguageSpecifiedCondition implements Condition{
         throw new InvalidJSONForCondition(json, "needToInclude")
     }
 
-    return new LanguageSpecifiedCondition(
+    const out = new LanguageSpecifiedCondition(
       json.languageSpecification,
-      checkOn,
+      CheckOn.Both,//this will be overwritten when the abstract properties are loaded
       callAPI,
       needToInclude
     )
 
+    //load abstract properties
+    out.fromJSON(json)
+
+    return out
   }
 
   constructor(
@@ -96,19 +77,14 @@ class LanguageSpecifiedCondition implements Condition{
     needToInclude:NeedToInclude = NeedToInclude.History,
     n:number = 1
     ){
-    this.languageSpecification = languageSpecification
-    this.callAPI = callAPI
-    this.checkOn=checkOn
-    this.needToInclude = needToInclude
+      super(checkOn)
+      this.languageSpecification = languageSpecification
+      this.callAPI = callAPI
+      this.needToInclude = needToInclude
   }
 
-  init():void {
-    if(this.persistent){
-      this.lastState = false
-    }
-  }
 
-  check(conversation:Conversation):Promise<boolean> {
+  protected check(conversation:Conversation):Promise<boolean> {
 
     var prompt =""
 
@@ -139,8 +115,13 @@ class LanguageSpecifiedCondition implements Condition{
         if(lines.length==0){ return Promise.resolve(false) }
         //it is important to ensure order is preserved here
         const toAdd=[]
-        for(var i=lines.length-1; i>=0 && i>=lines.length-this.n; i--){
-          toAdd.push(lines[i])
+        var i = lines.length-1
+        while(toAdd.length<this.n && i>=0){
+          //check that the last message is not an instruction
+          if(lines[i][0]!="("){
+            toAdd.push(lines[i])
+          }
+          i--;
         }
         for(var i=toAdd.length-1; i>=0; i--){
           prompt+=toAdd[i]
@@ -167,18 +148,14 @@ class LanguageSpecifiedCondition implements Condition{
           //#FF0000 Temporary line
           console.log("\t condition met - "+this.languageSpecification)
 
-          if(this.persistent&&!this.triggerOnce){this.lastState=true}
-          this.lastState=true
           resolve(true)
         }
         else if (processedResponse=="no"){
-          this.lastState=false
           resolve(false)
         }
         else{
           //maybe throw some error here, the response needs to be logged
           // for now just say no
-          this.lastState=false
           resolve(false)
         }
       })
@@ -190,44 +167,9 @@ class LanguageSpecifiedCondition implements Condition{
     return this.callAPI(prompt, 0.0, 5,[".",","])
   }
 
-
-  afterUserMessageCheck(conversation: Conversation): Promise<boolean> {
-    if(this.persistent&&this.lastState){
-      return Promise.resolve(!this.triggerOnce)
-    }
-    if(this.checkOn==CheckOn.AfterUserMessage || this.checkOn==CheckOn.Both){
-      return this.check(conversation)
-    }
-    else{
-      return Promise.resolve(false)
-    }
-  }
-  
-  afterBotMessageCheck(conversation: Conversation): Promise<boolean>{
-    if(this.persistent&&this.lastState){
-      return Promise.resolve(!this.triggerOnce)
-    }
-    if(this.checkOn==CheckOn.AfterBotMessage || this.checkOn==CheckOn.Both){
-      return this.check(conversation)
-    }
-    else{
-      return Promise.resolve(false)
-    }
-  }
-
-  setPersistent(persistent: boolean){
-    this.persistent = persistent
-  }
-
-  setTriggerOnce(triggerOnce: boolean){
-    this.triggerOnce = triggerOnce
-    if(triggerOnce){
-      this.persistent = true
-    }
-  }
 }
 
 
 export default LanguageSpecifiedCondition
 
-export {LanguageSpecifiedCondition, CheckOn,NeedToInclude}
+export {LanguageSpecifiedCondition, NeedToInclude}

@@ -1,6 +1,7 @@
 import readline from "readline"
 import CallGPT3 from "../src/CallGPT3"
-import { LanguageSpecifiedCondition, CheckOn, NeedToInclude } from "../src/Conditions/LanguageSpecifiedCondition"
+import { LanguageSpecifiedCondition, NeedToInclude } from "../src/Conditions/LanguageSpecifiedCondition"
+import { CheckOn } from "../src/Conditions/AbstractCondition"
 import { normalize } from "../src/TextProcessing/normalize"
 import NumberCoding from "../src/TextProcessing/NumberCoding"
 

@@ -1,5 +1,6 @@
 import Config from "./Config";
 import ControlSystem from "./ControlSystem";
+import {PricingModel, pricingModelFromJSON, } from "./PricingModels/PricingModel";
 import { normalize } from "./TextProcessing/normalize";
 import NumberCoding from "./TextProcessing/NumberCoding";
 
@@ -11,17 +12,20 @@ class Conversation {
   //the preamble without codes
   public basicPreamble:string
 
+  //key components that need to be accessed by Conditions and Actions
+  public numberCode:NumberCoding
+  public pricingModel:PricingModel
+
 
   private callAPI:(prompt:string, temperature:number, maxTokens: number, stop:Array<string>) => Promise<string>
   private controlSystem:ControlSystem
   private pendingInstructions:Array<string> =new Array<string>()
-  private numberCode:NumberCoding
 
   
 
   constructor(
     config:Config, 
-    callAPI:(prompt:string, temperature:number, maxTokens: number, stop:Array<string>) => Promise<string>
+    callAPI:(prompt:string, temperature:number, maxTokens: number, stop:Array<string>) => Promise<string>,
     ) {
     this.config = config
     this.callAPI = callAPI
@@ -31,6 +35,10 @@ class Conversation {
     //add value codes
     this.basicPreamble=this.numberCode.encode(normalize(config.preamble))
 
+
+    this.pricingModel = pricingModelFromJSON(config.pricingModel)
+
+    this.pricingModel.init()
   }
 
   //produces a string that communicates the code to the API
@@ -95,6 +103,14 @@ class Conversation {
 
   public submitInstruction(instruction:string):void {
     this.pendingInstructions.push(this.numberCode.encode(normalize(instruction)))
+  }
+
+  //return the last message (encoded) or the empty string if there are no messages
+  public getLastMessage():string{
+    if(this.messages.length>0){
+      return this.history.split("\n").pop()!
+    } 
+    return ""
   }
 }
 

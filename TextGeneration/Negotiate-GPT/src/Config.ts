@@ -8,7 +8,8 @@ type Config = {
     conditions:any[],
     actions:any[],
     controlParis:any[]
-  }
+  },
+  pricingModel:any
 }
 
 export default Config

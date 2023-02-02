@@ -9,6 +9,7 @@ const rl = readline.createInterface({
 })
 
 import * as path from "path"
+import PriceBelow from "../src/PricingModels/PriceBelow"
 
 const activeConfig= require(path.resolve()+"/testConfigs/HeartsChatToiletBoom.json")
 
