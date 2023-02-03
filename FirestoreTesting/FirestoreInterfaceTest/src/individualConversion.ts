@@ -3,16 +3,10 @@ import  {Conversation} from "./DatabaseInterface.js"
 
 
 export const conversion = (data: any[]):Conversation => {
-    var i = 0;
-
         const object: {[index: string]:any} = {} as Conversation;
-        object['surveyId'] = data[i].surveyId;
-        object['agentId'] = data[i].agentId;
-        object['responseId'] = data[i].responseId;
-        var messages = [];
-        for(let conv of data) {
-            messages.push(conv)
-        }
-        object['messages'] = messages;
+        object['surveyId'] = data[0].surveyId;
+        object['agentId'] = data[0].agentId;
+        object['responseId'] = data[0].responseId;
+        object['messages'] = data;
         return object as Conversation;
 }
