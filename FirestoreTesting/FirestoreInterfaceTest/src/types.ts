@@ -1,4 +1,5 @@
 import { google } from "@google-cloud/dialogflow-cx/build/protos/protos";
+import { firestore } from "firebase-admin";
 
 export type ResponseMessage = google.cloud.dialogflow.cx.v3.IResponseMessage;
 
@@ -28,12 +29,13 @@ export type AgentParameters = {
 /* --------- Logging -------------------------------------*/
 
 interface LogMetadata {
-  timestamp: string;
+  surveyId: string;
+  timestamp: String;
   sessionId: string;
   agentId: string;
   responseId: string;
-  request: string;
-  response: string;
+  input: string;
+  output: string;
 }
 
 export interface LogResponse extends LogMetadata {

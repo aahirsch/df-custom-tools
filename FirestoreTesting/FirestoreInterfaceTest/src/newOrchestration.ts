@@ -13,7 +13,7 @@ declare var require: any
 let credentialsLocation = "/Users/christophersebastian/Downloads/heartschat-prod-a505-firebase-adminsdk-dgjo6-35494c7d54.json"
 
 
-import admin from 'firebase-admin'
+import admin, { firestore } from 'firebase-admin'
 
 
 import fs from "fs"
@@ -27,21 +27,30 @@ admin.initializeApp({
 })
 
 const db: Firestore = admin.firestore()
-
+db.settings({ ignoreUndefinedProperties: true })
 
 let col: CollectionReference = db.collection("cloudTest");
 
 let dateCol: CollectionReference = db.collection("lastRan");
 
-let testingTime = new Date
-testingTime.setDate(testingTime.getDate() - 20)
-function run() {
-  dateCol.doc('time').update({
-    date: testingTime
-  }).then(res => {
-    allAtOnce("heartschat-prod-a505",dateCol,col)
-  });
-  
+
+async function wayBackTime() {
+  let testingTime = new Date
+  testingTime.setDate(testingTime.getDate() - 5)
+  let y = firestore.Timestamp.fromDate(testingTime)
+
+  await dateCol.doc('time').update({
+    date: y
+  }) 
+}
+
+
+
+
+async function run() {
+  await wayBackTime()
+  console.log("running")
+  allAtOnce("heartschat-prod-a505",dateCol,col)
 }
 
 run()
