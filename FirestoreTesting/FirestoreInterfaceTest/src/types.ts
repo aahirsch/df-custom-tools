@@ -30,7 +30,7 @@ export type AgentParameters = {
 
 interface LogMetadata {
   surveyId: string;
-  timestamp: String;
+  timestamp: string;
   sessionId: string;
   agentId: string;
   responseId: string;

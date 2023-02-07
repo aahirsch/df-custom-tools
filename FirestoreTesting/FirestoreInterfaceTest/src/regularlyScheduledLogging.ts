@@ -46,7 +46,7 @@ export async function* readResponses(
   });
   
   for await (const { data, metadata } of stream) {
-
+    console.log("ONE")
     let para = data.queryResult?.parameters
     if(para!=undefined) {
       para['intent'] = data?.queryResult?.intent?.displayName ?? ""
@@ -58,7 +58,7 @@ export async function* readResponses(
       responseId: data.responseId ?? "",
       agentId: metadata.labels?.agent_id ?? "",
       sessionId: metadata.labels?.session_id ?? "",
-      timestamp: metadata.timestamp?.valueOf() ?? "",
+      timestamp: metadata.timestamp ?? "",
       input: data.queryResult?.text ?? "",
       output: transformMessages(data.queryResult?.responseMessages ?? []),
       parameters: para ?? {},
@@ -94,19 +94,20 @@ export async function allAtOnce(
   let map = new Map<String, LogResponse[]>();
 
   // Used to determine if we can upload a conversation
-  let allowedToUploadHelper: Date = rn.toDate();
-  allowedToUploadHelper.setMinutes(allowedToUploadHelper.getMinutes() - 60);
-  const allowedToUpload: firestore.Timestamp = firestore.Timestamp.fromDate(allowedToUploadHelper)
+  let allowedToUpload: Date = rn.toDate();
+  allowedToUpload.setMinutes(allowedToUpload.getMinutes() - 60);
   
 
   // Limit our search to 60 minutes before the last run
-  let cutOffHelper: Date = lastRan.toDate();
-  cutOffHelper.setMinutes(cutOffHelper.getMinutes()-60);
-  const cutOff:firestore.Timestamp = firestore.Timestamp.fromDate(cutOffHelper)
+  let cutOff: Date = lastRan.toDate();
+  cutOff.setMinutes(cutOff.getMinutes()-60);
+
   
   // Get Stream
   console.log("here!?!?!?1")
-  const stream = readResponses(projectId, rn.valueOf(), cutOff.valueOf());
+  console.log(rn.toDate().toISOString())
+  console.log(cutOff.toISOString())
+  const stream = readResponses(projectId,  cutOff.toISOString(),rn.toDate().toISOString());
   console.log("i bet this doesn't print")
   // loops
   for await (const response of stream) {
@@ -115,7 +116,7 @@ export async function allAtOnce(
       continue;
     }
     console.log("inside")
-    let curDate: String = response.timestamp;
+    let curDate: string = response.timestamp;
     // Add to our map
     if(map.has(response.responseId)) {
         map.get(response.responseId)?.push(response);  
@@ -127,7 +128,7 @@ export async function allAtOnce(
     if(response.parameters.first_msg == 1 && response.parameters.intent == "Default Welcome Intent") {
       // Check if it is within 60 minutes of now, if it is we don't want anything to do with this data,
       // so we delete it from our map and we'll get it next time
-      if(curDate > allowedToUpload.valueOf()) {
+      if(curDate > allowedToUpload.toISOString()) {
         map.delete(response.responseId);  
       } else {
         // If it is older than 60 minutes then we are all good, we can garunetee that we have captured
