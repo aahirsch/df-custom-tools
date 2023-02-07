@@ -146,7 +146,7 @@ class LanguageSpecifiedCondition extends AbstractCondition{
         if(processedResponse=="yes"){
 
           //#FF0000 Temporary line
-          console.log("\t condition met - "+this.languageSpecification)
+          //console.log("\t condition met - "+this.languageSpecification)
 
           resolve(true)
         }

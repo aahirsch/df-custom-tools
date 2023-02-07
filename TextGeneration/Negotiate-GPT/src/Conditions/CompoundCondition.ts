@@ -20,7 +20,7 @@ interface CompoundCondition extends Condition {
    initPointers: (conditionsMap:Map<string,Condition>) => void;
 
    //list of condition keys
-   getDependencies: () => string[];
+   getDependencies: () => Condition[];
 
    afterUserMessageCheck: (conversation:Conversation,
       dependencyResults: Map<Condition, boolean>,

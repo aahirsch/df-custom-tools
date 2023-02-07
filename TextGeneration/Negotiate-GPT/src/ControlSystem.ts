@@ -4,24 +4,8 @@ import {Condition, InvalidJSONForCondition} from "./Conditions/Condition"
 import CompoundCondition from "./Conditions/CompoundCondition"
 import Conversation from "./Conversation"
 
-
-import ConditionKeys from "./Conditions/ConditionKeys"
-
-//conditions
-import LanguageSpecifiedCondition from "./Conditions/LanguageSpecifiedCondition"
-ConditionKeys.set("LanguageSpecifiedCondition", LanguageSpecifiedCondition.fromJSON)
-
-import And from "./Conditions/And"
-ConditionKeys.set("And", And.fromJSON)
-
-import ActionKeys from "./Actions/ActionKeys"
-
-//actions
-import SubmitBotInstruction from "./Actions/SubmitBotInstruction"
-
-ActionKeys.set("SubmitBotInstruction", SubmitBotInstruction.fromJSON)
-
-
+import GetConditionFromJSON from "./Conditions/GetConditionFromJSON"
+import GetActionFromJSON from "./Actions/GetActionFromJSON"
 
 class InvalidJSONForControlSystem extends Error{
   constructor(json:any, missingProperty:string){
@@ -34,13 +18,13 @@ class ControlSystem{
   //excludes compound conditions
   conditions: Array<Condition> = []
 
-  compoundConditions: Array<CompoundCondition> = []
+  compoundConditions: Array<CompoundCondition> = new Array<CompoundCondition>()
 
   actions: Array<Action> = []
 
   controlPairs: Map<Condition, Array<Action>> = new Map<Condition, Array<Action>>()
 
-  static fromJSON(json:any):ControlSystem{
+  public static fromJSON(json:any):ControlSystem{
 
     const controlSystem = new ControlSystem()
 
@@ -67,18 +51,11 @@ class ControlSystem{
       if(name == undefined){
         throw new InvalidJSONForControlSystem(json, "CONDITION.name")
       }
-      const type = conditionJSON.type
-      if(type == undefined){
-        throw new InvalidJSONForControlSystem(json, "CONDITION.type")
-      }
 
-      if(!ConditionKeys.has(type)){
-        throw new InvalidJSONForControlSystem(json, `CONDITION.type ${type}`)
-      }
-
-      const condition = ConditionKeys.get(type)!(conditionJSON, CallGPT3)
+      const condition = GetConditionFromJSON(conditionJSON, CallGPT3)
 
       conditionMap.set(name, condition)
+      controlSystem.registerCondition(condition)
 
     })
 
@@ -92,16 +69,10 @@ class ControlSystem{
       if(name == undefined){
         throw new InvalidJSONForControlSystem(json, "ACTION.name")
       }
-      const type = actionJSON.type
-      if(type == undefined){
-        throw new InvalidJSONForControlSystem(json, "ACTION.type")
-      }
 
-      if(!ActionKeys.has(type)){
-        throw new InvalidJSONForControlSystem(json, `ACTION.type ${type}`)
-      }
-
-      actionMap.set(name, ActionKeys.get(type)!(actionJSON))
+      const action = GetActionFromJSON(actionJSON)
+      actionMap.set(name, action)
+      controlSystem.actions.push(action)
 
     })
 
@@ -129,13 +100,69 @@ class ControlSystem{
       controlSystem.addControlPair(condition!, action!)
     })
 
-    //Step 5: resolve all compound conditions
+    //Step 5: init compound conditions
 
     controlSystem.compoundConditions.forEach((compoundCondition:CompoundCondition) => {
       compoundCondition.initPointers(conditionMap)
     })
 
+    //Step 6: preCompute compound condition execution order
+
+    try{
+      controlSystem.compoundConditions = this.computeCompoundConditionExecutionOrder(controlSystem.compoundConditions, conditionMap)
+    }
+    catch(e){
+      if(e instanceof InvalidJSONForCondition){
+        e.json = json
+        throw e
+      }
+    }
+
     return controlSystem
+  }
+
+
+  //O(n^2)
+  private static computeCompoundConditionExecutionOrder(
+    compoundConditions:Array<CompoundCondition>,
+    conditionsMap:Map<string, Condition>
+    ):Array<CompoundCondition>{
+    //find roots
+    const roots:Set<CompoundCondition> = new Set<CompoundCondition>(compoundConditions)
+
+    compoundConditions.forEach((compoundCondition:CompoundCondition) => {
+      compoundCondition.getDependencies().forEach((dependency:Condition) => {
+        if(dependency.isCompound()){
+          roots.delete(dependency as CompoundCondition)
+        }
+      })
+    })
+
+    if(roots.size == 0&&compoundConditions.length>0){
+      throw new InvalidJSONForCondition({}, "Compound Conditions are cyclical")
+    }
+
+    const executionOrder:Array<CompoundCondition> = []
+
+    const recursiveAdd = (compoundCondition:CompoundCondition) => {
+      if(executionOrder.includes(compoundCondition)){
+        return
+      } 
+
+      compoundCondition.getDependencies().forEach((dependency:Condition) => {
+        if(dependency.isCompound()){
+          recursiveAdd(dependency as CompoundCondition)
+        }
+      })
+      executionOrder.push(compoundCondition)
+    }
+
+    roots.forEach((root:CompoundCondition) => {
+      recursiveAdd(root)
+    })
+
+    return executionOrder
+
   }
 
   private registerCondition(condition:Condition):void{
@@ -159,13 +186,12 @@ class ControlSystem{
       this.controlPairs.get(condition)!.push(action)
     }
     else{
-      this.conditions.push(condition)
       this.controlPairs.set(condition, [action])
     }
   }
 
 
-  init():void{
+  public init():void{
     this.conditions.forEach((condition:Condition) => {
       condition.init()
     })
@@ -179,47 +205,65 @@ class ControlSystem{
   //cache results of conditions
   //navigate the compoundCondition Tree
 
-  async onUserMessage(conversation:Conversation):Promise<any>{
-    //make sure all conditions are fully checked before returning
-    const promises:Promise<void>[]=[]
+  private async checkConditions(conversation:Conversation,
+    checkCondition:(condition:Condition) => Promise<boolean>,
+    checkCompoundCondition:(condition:CompoundCondition, conditionResults: Map<Condition,boolean>) => Promise<boolean>
+    ):Promise<any>{
+
+      const conditionResults:Map<Condition, boolean> = new Map<Condition, boolean>()
+
+    //note
+    //It is really important that each of the non-compound conditions are checked async
+    //this ensures latency = max(latency of each condition)
 
     //check root conditions
+    const promises:Promise<void>[] = []
 
-    this.conditions.forEach(async (condition:Condition) => {
-      promises.push(new Promise<void>(async (resolve, reject) => {
-        if(await condition.afterUserMessageCheck(conversation)){
-          this.controlPairs.get(condition)!.forEach((action:Action) => {
+    for(let i = 0; i < this.conditions.length; i++){
+      promises.push((new Promise<void>(async (resolve,reject) => {
+        const result = await checkCondition(this.conditions[i])
+        conditionResults.set(this.conditions[i], result)
+        if(result&&this.controlPairs.has(this.conditions[i])){
+          this.controlPairs.get(this.conditions[i])!.forEach((action:Action) => {
             action.do(conversation)
-         })
+          })
         }
-        resolve()
-      }))
-    })
+        resolve()})))
+    }
 
-    //check compound conditions
+    await Promise.all(promises)
 
-    return Promise.all(promises)
+    //now all non-compound conditions have been checked
+
+    //check compound conditions in order an in sync
+    for(let i = 0; i < this.compoundConditions.length; i++){
+      const result = await checkCompoundCondition(this.compoundConditions[i], conditionResults)
+      conditionResults.set(this.compoundConditions[i], result)
+      if(result){
+        this.controlPairs.get(this.compoundConditions[i])!.forEach((action:Action) => {
+          action.do(conversation)
+        })
+      }
+    }
+
   }
 
-  async onBotMessage(conversation:Conversation):Promise<any>{
-    //make sure all conditions are fully checked before returning
-    const promises:Promise<void>[]=[]
+  public async onUserMessage(conversation:Conversation):Promise<any>{
 
-    //check root conditions
-    this.conditions.forEach(async (condition:Condition) => {
-      promises.push(new Promise<void>(async (resolve, reject) => {
-        if(await condition.afterBotMessageCheck(conversation)){
-          this.controlPairs.get(condition)!.forEach((action:Action) => {
-            action.do(conversation)
-         })
-        }
-        resolve()
-      }))
-    })
+    const conditionCall =  (condition:Condition) => condition.afterUserMessageCheck(conversation)
 
-    //check compound conditions
+    const compoundConditionCall = (condition:CompoundCondition, conditionResults: Map<Condition,boolean>) => condition.afterUserMessageCheck(conversation, conditionResults)
+    
+    await this.checkConditions(conversation, conditionCall, compoundConditionCall) 
+  }
 
-    return Promise.all(promises)
+  public async onBotMessage(conversation:Conversation):Promise<any>{
+
+    const conditionCall =  (condition:Condition) => condition.afterBotMessageCheck(conversation)
+
+    const compoundConditionCall = (condition:CompoundCondition, conditionResults: Map<Condition,boolean>) => condition.afterBotMessageCheck(conversation, conditionResults)
+
+    await this.checkConditions(conversation, conditionCall, compoundConditionCall)
   }
 
 }

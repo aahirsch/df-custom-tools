@@ -24,4 +24,5 @@ class GetFirstNumber implements Extractor<number|null> {
   }
 
 }
-  
+
+export default GetFirstNumber

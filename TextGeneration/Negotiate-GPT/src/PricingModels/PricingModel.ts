@@ -1,4 +1,3 @@
-import PricingModelKeys from "./PricingModelKeys";
 
 class InvalidJSONForPricingModel extends Error {
 
@@ -37,24 +36,8 @@ interface PricingModel {
 
 }
 
-//add all pricing models to this map
 
-import PriceBelow from "./PriceBelow";
-
-PricingModelKeys.set("PriceBelow", PriceBelow.fromJSON );
-
-//import PricingModel from JSON
-const pricingModelFromJSON = (json: any): PricingModel => {
-  if(json.type==undefined){
-    throw new InvalidJSONForPricingModel(json, "type");
-  }
-  const pricingModelType = PricingModelKeys.get(json.type);
-  if(pricingModelType==undefined){
-    throw new InvalidJSONForPricingModel(json, "type");
-  }
-  return pricingModelType(json)
-}
 
 export default PricingModel
 
-export { PricingModel, pricingModelFromJSON, InvalidJSONForPricingModel}
+export { PricingModel, InvalidJSONForPricingModel}

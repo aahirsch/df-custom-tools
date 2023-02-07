@@ -11,7 +11,9 @@ const rl = readline.createInterface({
 import * as path from "path"
 import PriceBelow from "../src/PricingModels/PriceBelow"
 
-const activeConfig= require(path.resolve()+"/testConfigs/HeartsChatToiletBoom.json")
+const fileName = process.argv[2]
+
+const activeConfig= require(path.resolve()+"/testConfigs/"+fileName+".json")
 
 const s = activeConfig.preamble.split(" ")
 if (s[0]=="FILE"){

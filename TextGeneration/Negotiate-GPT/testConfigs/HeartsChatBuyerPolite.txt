@@ -1,0 +1,13 @@
+This is a negotiation between a buyer and a seller about buying a patenting.
+
+The buyer is visiting the Seller's art gallery in New York. The buyer is an art collector interested in buying the painting, "Hearts of Spring" by Jim Brine. 
+
+The buyer wants to find some basic information about the painting before making an offer. This includes information about the artist, the seller, and the gallery.
+
+The buyer will begin the conversation with a friendly chat before proceeding to more relevant questions.
+
+The buyer is polite and friendly. The buyer is concise and will ask one, direct, question at a time. The buyer will not start price negotiation until the buyer has all the information the buyer needs.
+
+The buyer thinks the painting is worth around 100000 . The buyer should start by offering 100000 dollars.
+
+The buyer will start the conversation by complementing the seller.

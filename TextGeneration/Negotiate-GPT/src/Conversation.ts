@@ -1,42 +1,57 @@
+import Chatbot from "./Chatbot";
 import Config from "./Config";
 import ControlSystem from "./ControlSystem";
-import {PricingModel, pricingModelFromJSON, } from "./PricingModels/PricingModel";
+import {PricingModel} from "./PricingModels/PricingModel";
 import { normalize } from "./TextProcessing/normalize";
 import NumberCoding from "./TextProcessing/NumberCoding";
 
+
+/**
+ * Holds the information relevant to a single conversation and is responsible for operating the conversation(ie. calling the API and checking conditions)
+ * 
+ * Holds a reference to the parent Chatbot object
+ */
 class Conversation {
-  public config:Config
+
+  
+  private chatbot:Chatbot
+
   //NOTE this contains raw(uncoded) messages
   public messages:Array<[string,string]> = []
+
+  //The history of the conversation in coded form including bot instructions
   public history:string =""
-  //the preamble without codes
-  public basicPreamble:string
 
   //key components that need to be accessed by Conditions and Actions
   public numberCode:NumberCoding
+
   public pricingModel:PricingModel
 
-
-  private callAPI:(prompt:string, temperature:number, maxTokens: number, stop:Array<string>) => Promise<string>
-  private controlSystem:ControlSystem
   private pendingInstructions:Array<string> =new Array<string>()
 
-  
+  private humanPartyName:string
+
+  private aiPartyName:string
+
+  //the preamble of the chatbot encoded for this conversation. This does not include coding information.
+  private encodedPreamble:string 
 
   constructor(
-    config:Config, 
-    callAPI:(prompt:string, temperature:number, maxTokens: number, stop:Array<string>) => Promise<string>,
+    chatbot:Chatbot,
+    pricingModel:PricingModel,
+    humanPartyName:string,
+    aiPartyName:string
     ) {
-    this.config = config
-    this.callAPI = callAPI
-    this.controlSystem = ControlSystem.fromJSON(config.controlSystem)
+    
+    this.chatbot = chatbot
+    this.pricingModel = pricingModel
+    this.humanPartyName = humanPartyName
+    this.aiPartyName = aiPartyName
+
     this.numberCode = new NumberCoding()
 
     //add value codes
-    this.basicPreamble=this.numberCode.encode(normalize(config.preamble))
-
-
-    this.pricingModel = pricingModelFromJSON(config.pricingModel)
+    this.encodedPreamble=this.numberCode.encode(normalize(chatbot.getRawPreamble()))
 
     this.pricingModel.init()
   }
@@ -54,7 +69,7 @@ class Conversation {
   public getFullPreamble():string{
     var out = this.getCodeDescriptor()
     out+="\n\n"
-    out+=this.basicPreamble
+    out+=this.encodedPreamble
     return out
   }
 
@@ -62,7 +77,7 @@ class Conversation {
 
     const processedMessage = this.numberCode.encode(normalize(message))
 
-    this.history+= "\n" + this.config.humanPartyName + ": " + processedMessage 
+    this.history+= "\n" + this.humanPartyName + ": " + processedMessage 
 
     return new Promise<string>(async (resolve, reject) => {
 
@@ -77,17 +92,14 @@ class Conversation {
           this.history+=" "
         }
         this.history+=")"
+
       }
       this.pendingInstructions= new Array<string>()
 
-      const prompt = this.getFullPreamble() + "\n" + this.history +"\n" + this.config.aiPartyName + ": "
-      const response = (await this.callAPI(
-        prompt, this.config.temperature,
-        this.config.maxOutputLength,
-        [this.config.humanPartyName+":",this.config.aiPartyName+":"]
-        )).trim()
+      const prompt = this.getFullPreamble() + "\n" + this.history +"\n" + this.aiPartyName + ": "
+      const response = (await this.chatbot.callAPI(prompt)).trim()
 
-      this.history+= "\n" + this.config.aiPartyName + ": " + response
+      this.history+= "\n" + this.aiPartyName + ": " + response
 
       const decodedResponse = this.numberCode.decode(response)
 
