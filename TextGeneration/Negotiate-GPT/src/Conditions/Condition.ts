@@ -19,13 +19,34 @@ class InvalidJSONForCondition extends Error {
 
 interface Condition {
 
-  //clear for new conversation
-  init: () => void;
+  /**
+   * Checks the condition is triggered. This is called after the user message is processed.
+   * 
+   * @param conversation the conversation to check the condition for
+   * 
+   * @param lastState the last state of the condition
+   * 
+   * @param args
+   * 
+   */
+  afterUserMessageCheck: (conversation: Conversation, lastState: boolean|undefined, ...args:any[]) => Promise<boolean>;
 
-  afterUserMessageCheck: (conversation: Conversation, ...args:any[]) => Promise<boolean>;
+  /**
+   * Checks the condition is triggered. This is called after the bot message is processed.
+   * 
+   * @param conversation the conversation to check the condition for
+   * 
+   * @param lastState the last state of the condition
+   * 
+   * @param args
+   * 
+   */
+  afterBotMessageCheck: (conversation: Conversation, lastState:boolean|undefined, ...args:any[]) => Promise<boolean>;
 
-  afterBotMessageCheck: (conversation: Conversation, ...args:any[]) => Promise<boolean>;
-
+  /**
+   * 
+   * @returns true if the condition is a compound condition, false otherwise
+   */
   isCompound: () => boolean;
 
 }

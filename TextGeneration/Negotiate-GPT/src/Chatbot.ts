@@ -1,5 +1,6 @@
 import Config from "./Config"
 import ControlSystem from "./ControlSystem"
+import Conversation from "./Conversation"
 import PricingModel  from "./PricingModels/PricingModel"
 import pricingModelFromJSON from "./PricingModels/PricingModelFromJSON"
 
@@ -16,16 +17,12 @@ class Chatbot{
 
   private config:Config
   private callAPISource:CallAPIFunction
-  private controlSystem:ControlSystem
-
-  public pricingModel:PricingModel
+  public controlSystem:ControlSystem
 
   constructor(config:Config, callAPI:CallAPIFunction){
     this.config = config
     this.callAPISource = callAPI
     this.controlSystem = ControlSystem.fromJSON(config.controlSystem)
-
-    this.pricingModel = pricingModelFromJSON(config.pricingModel)
   }
 
   /**
@@ -42,6 +39,10 @@ class Chatbot{
       this.config.maxOutputLength,
       [this.config.humanPartyName+":",this.config.aiPartyName+":"]
       )
+  }
+
+  public createConversation():Conversation{
+    return new Conversation(this,pricingModelFromJSON(this.config.pricingModel),this.config.humanPartyName,this.config.aiPartyName)
   }
 
 }

@@ -12,6 +12,7 @@ export default (prompt:string,temperature:number, maxTokens: number, stop:Array<
       model: "text-davinci-003",
       prompt: prompt,
       max_tokens: maxTokens,
+      temperature:temperature,
       top_p:1,
       frequency_penalty:0.0,
       presence_penalty:0.6,

@@ -7,7 +7,7 @@ class MakeOffer implements Action{
 
   public do(conversation: Conversation){
     const offerValue = conversation.pricingModel.getNewOffer()
-    conversation.submitInstruction(`The ${conversation.config.aiPartyName} should make an offer of ${offerValue} .`)
+    conversation.submitInstruction(`The ${conversation.aiPartyName} should make an offer of ${offerValue} .`)
 
   }
 

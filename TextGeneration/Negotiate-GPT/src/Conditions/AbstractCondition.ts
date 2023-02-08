@@ -15,12 +15,15 @@ abstract class AbstractCondition implements Condition{
 
   private checkOn: CheckOn;
 
-  private lastState: boolean|undefined = undefined;
-
   constructor(checkOn: CheckOn){
     this.checkOn = checkOn;
   }
 
+  /**
+   * sets up the CheckOn term and adds the persistent and triggerOnce terms if they are present 
+   * 
+   * @param json the JSON to parse
+   */
   protected fromJSON(json: any) {
     if(json.checkOn===undefined){
       throw new InvalidJSONForCondition(json, "checkOn");
@@ -59,24 +62,16 @@ abstract class AbstractCondition implements Condition{
     
   }
 
-  public init(): void{
-    if(this.persistent){
-      this.lastState = false;
-    }
-  }
-
-  //NOTE the last state should not be used by compound conditions
-  protected getLastState(): boolean|undefined {
-    return this.lastState;
-  }
-
-  protected setLastState(state: boolean): void {
-    this.lastState = state;
-  }
-
-  //NOTE the last state should not be changed if persistenceCondition is met
-  protected checkPersistenceCondition(): {override:boolean, state:boolean} {
-    if(this.persistent&&this.lastState){
+  /**
+   * Checks if the condition check should be skipped and if so what the state should be
+   * 
+   * @param lastState the last state of the condition
+   * 
+   * @returns {override:boolean, state:boolean} - override: if the condition check should be skipped, state: the state the condition should be in
+   * 
+   */
+  protected checkPersistenceCondition(lastState:boolean|undefined): {override:boolean, state:boolean} {
+    if(this.persistent&&lastState){
       return {override: true, state: this.triggerOnce};
     }
     return {override: false, state: false};
@@ -84,8 +79,9 @@ abstract class AbstractCondition implements Condition{
 
   protected abstract check(conversation: Conversation, ...args: any[]):  Promise<boolean>;
 
-  public afterUserMessageCheck(conversation: Conversation, ...args: any[]):  Promise<boolean>{
-    if(this.persistent&&this.lastState){
+  
+  public afterUserMessageCheck(conversation: Conversation, lastState:boolean|undefined, ...args: any[]):  Promise<boolean>{
+    if(this.persistent&&lastState){
       return Promise.resolve(!this.triggerOnce);
     }
     //else
@@ -94,13 +90,14 @@ abstract class AbstractCondition implements Condition{
     }
     const state = this.check(conversation, ...args);
     if(this.persistent){
-      state.then((result)=>{this.lastState = result})
+      state.then((result)=>{lastState = result})
     }
     return state;
   }
 
-  public afterBotMessageCheck(conversation: Conversation, ...args: any[]):  Promise<boolean>{
-    if(this.persistent&&this.lastState){
+  
+  public afterBotMessageCheck(conversation: Conversation, lastState:boolean|undefined, ...args: any[]):  Promise<boolean>{
+    if(this.persistent&&lastState){
       return Promise.resolve(!this.triggerOnce);
     }
     //else
@@ -108,9 +105,10 @@ abstract class AbstractCondition implements Condition{
       return Promise.resolve(false);
     }
     const state = this.check(conversation, ...args);
-    state.then((result)=>{this.lastState = result})
+    state.then((result)=>{lastState = result})
     return state;
   }
+  
   
   public isCompound(): boolean {
     return false;

@@ -16,10 +16,6 @@ class SubmitBotInstruction implements Action{
     this.instruction = instruction;
   }
 
-  init(): void {
-    return
-  }
-
   do(conversation: Conversation): void {
     conversation.submitInstruction(this.instruction)
   }

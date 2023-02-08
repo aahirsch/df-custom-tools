@@ -15,19 +15,50 @@ class CompoundConditionOperationAttemptedBeforeInitialization extends Error{
 
 interface CompoundCondition extends Condition {
 
-   //initializes the pointers to the conditions
-   //this should be run after importing from JSON
+
+   /**
+    * Initializes the condition pointers to the conditions in the conditions map. This must be called after importing all conditions.
+    * 
+    * @param conditionsMap a map of condition keys to conditions used for matching condition names in the JSON to condition objects
+    * @returns 
+    */
    initPointers: (conditionsMap:Map<string,Condition>) => void;
 
-   //list of condition keys
+   /**
+    * 
+    * @returns the list of conditions that this compound condition depends on
+    */
    getDependencies: () => Condition[];
 
+   /**
+    * 
+    * Checks the condition is triggered. This is called after the user message is processed. 
+    * 
+    * @param conversation the conversation to check the condition for
+    * @param lastState the last state of the condition
+    * @param dependencyResults a map containing the results of the dependencies of this condition (will not be modified)
+    * @param args 
+    * @returns 
+    */
    afterUserMessageCheck: (conversation:Conversation,
+      lastState: boolean|undefined,
       dependencyResults: Map<Condition, boolean>,
       ...args: any[]
       ) => Promise<boolean>;
 
+
+   /**
+    * 
+    * Checks the condition is triggered. This is called after the bot message is processed.
+    * 
+    * @param conversation the conversation to check the condition for
+    * @param lastState the last state of the condition
+    * @param dependencyResults a map containing the results of the dependencies of this condition (will not be modified)
+    * @param args 
+    * @returns 
+    */
    afterBotMessageCheck: (conversation:Conversation,
+      lastState: boolean|undefined,
       dependencyResults: Map<Condition, boolean>,
       ...args:any[]
       ) => Promise<boolean>;

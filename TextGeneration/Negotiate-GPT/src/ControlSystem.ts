@@ -191,20 +191,6 @@ class ControlSystem{
   }
 
 
-  public init():void{
-    this.conditions.forEach((condition:Condition) => {
-      condition.init()
-    })
-    this.actions.forEach((action:Action) => {
-      action.init()
-    })
-  }
-
-  //TODO
-  // abstract most of this function in a private function
-  //cache results of conditions
-  //navigate the compoundCondition Tree
-
   private async checkConditions(conversation:Conversation,
     checkCondition:(condition:Condition) => Promise<boolean>,
     checkCompoundCondition:(condition:CompoundCondition, conditionResults: Map<Condition,boolean>) => Promise<boolean>
@@ -248,20 +234,70 @@ class ControlSystem{
 
   }
 
-  public async onUserMessage(conversation:Conversation):Promise<any>{
+  /**
+   * onUserMessage checks all the conditions that are set to be check after a user message or after both.
+   * 
+   * The conditionLastStates are used to determine if persistent and trigger-once conditions should be checked
+   * 
+   * conditionLastStates will be updated with the new condition states
+   *
+   * @param {Conversation} conversation - the conversation the conditions should be checked in
+   * 
+   * @param {Map<Condition,boolean>} conditionLastStates - a map of the last states of each condition used for bypassing persistent and trigger-once conditions (will be modified)
+   * 
+   * @returns {Promise<any>}
+   * 
+   */
+  public async onUserMessage(conversation:Conversation, conditionLastStates:Map<Condition,boolean>):Promise<any>{
 
-    const conditionCall =  (condition:Condition) => condition.afterUserMessageCheck(conversation)
+    const conditionCall =  async (condition:Condition) => {
+      const result = await condition.afterUserMessageCheck(conversation, conditionLastStates.get(condition))
+      conditionLastStates.set(condition, result)
+      return result
+    }
 
-    const compoundConditionCall = (condition:CompoundCondition, conditionResults: Map<Condition,boolean>) => condition.afterUserMessageCheck(conversation, conditionResults)
+    const compoundConditionCall = async (condition:CompoundCondition, conditionResults: Map<Condition,boolean>) => {
+      const result = await condition.afterUserMessageCheck(
+        conversation,
+        conditionLastStates.get(condition),
+        conditionResults)
+      conditionLastStates.set(condition, result)
+      return result
+    }
     
     await this.checkConditions(conversation, conditionCall, compoundConditionCall) 
   }
 
-  public async onBotMessage(conversation:Conversation):Promise<any>{
 
-    const conditionCall =  (condition:Condition) => condition.afterBotMessageCheck(conversation)
+  /**
+   * onBot checks all the conditions that are set to be check after a bot message or after both.
+   * 
+   * The conditionLastStates are used to determine if persistent and trigger-once conditions should be checked
+   * 
+   * conditionLastStates will be updated with the new condition states
+   * 
+   * @param {Conversation} conversation - the conversation the conditions should be checked in
+   * 
+   * @param {Map<Condition,boolean>} conditionLastStates - a map of the last states of each condition used for bypassing persistent and trigger-once conditions (will be modified)
+   * 
+   * @returns {Promise<any>}
+   * 
+   */
+  public async onBotMessage(conversation:Conversation,conditionLastStates:Map<Condition,boolean>):Promise<any>{
 
-    const compoundConditionCall = (condition:CompoundCondition, conditionResults: Map<Condition,boolean>) => condition.afterBotMessageCheck(conversation, conditionResults)
+    const conditionCall =  async (condition:Condition) =>{ 
+      const result = await condition.afterBotMessageCheck(conversation, conditionLastStates.get(condition))
+      conditionLastStates.set(condition, result)
+      return result
+    }
+
+    const compoundConditionCall = async (condition:CompoundCondition, conditionResults: Map<Condition,boolean>) => {
+      const result = await condition.afterBotMessageCheck(conversation,
+        conditionLastStates.get(condition), 
+        conditionResults)
+      conditionLastStates.set(condition, result)
+      return result
+      }
 
     await this.checkConditions(conversation, conditionCall, compoundConditionCall)
   }

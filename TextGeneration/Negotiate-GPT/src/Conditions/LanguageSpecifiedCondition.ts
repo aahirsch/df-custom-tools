@@ -95,13 +95,13 @@ class LanguageSpecifiedCondition extends AbstractCondition{
 
     switch(this.needToInclude){
       case NeedToInclude.Preamble:
-        prompt+=conversation.basicPreamble
+        prompt+=conversation.encodedPreamble
         break
       case NeedToInclude.History:
         prompt+=conversation.history
         break
       case NeedToInclude.PreambleAndHistory:
-        prompt+=conversation.basicPreamble
+        prompt+=conversation.encodedPreamble
         prompt+="\n"
         prompt+=conversation.history
         break
@@ -144,10 +144,6 @@ class LanguageSpecifiedCondition extends AbstractCondition{
       this.askAPI(prompt).then((response:string) => {
         const processedResponse = response.trim().toLowerCase()
         if(processedResponse=="yes"){
-
-          //#FF0000 Temporary line
-          //console.log("\t condition met - "+this.languageSpecification)
-
           resolve(true)
         }
         else if (processedResponse=="no"){

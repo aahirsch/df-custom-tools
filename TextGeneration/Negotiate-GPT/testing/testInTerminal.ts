@@ -1,7 +1,7 @@
 import readline from "readline"
 import fs from "fs"
 import CallGPT3 from "../src/CallGPT3"
-import Conversation from "../src/Conversation"
+import Chatbot from "../src/Chatbot"
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -9,7 +9,7 @@ const rl = readline.createInterface({
 })
 
 import * as path from "path"
-import PriceBelow from "../src/PricingModels/PriceBelow"
+
 
 const fileName = process.argv[2]
 
@@ -20,7 +20,9 @@ if (s[0]=="FILE"){
   activeConfig.preamble = fs.readFileSync("testConfigs/"+s[1]+".txt").toString()
 }
 
-const conversation:Conversation = new Conversation(activeConfig,CallGPT3)
+const bot:Chatbot = new Chatbot(activeConfig,CallGPT3)
+
+const conversation = bot.createConversation()
 
 const getUserInput = async (prompt:string) => {
   return new Promise<string>((resolve) => {
@@ -29,6 +31,7 @@ const getUserInput = async (prompt:string) => {
     })
   })
 }
+
 
 const conversationLoop = async () => {
   while(true){
@@ -41,3 +44,4 @@ const conversationLoop = async () => {
 console.log(activeConfig.preamble)
 console.log("\n")
 conversationLoop()
+

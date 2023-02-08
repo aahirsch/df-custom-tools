@@ -16,9 +16,12 @@ class InvalidJSONForAction extends Error {
 
 interface Action {
 
-  //clear for new conversation
-  init: () => void;
 
+  /**
+   *  the action to be performed on the conversation
+   * @param conversation the conversation to perform the action on
+   * @returns 
+   */
   do: (conversation: Conversation) => void;
 
 }

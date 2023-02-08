@@ -1,6 +1,5 @@
 import Chatbot from "./Chatbot";
-import Config from "./Config";
-import ControlSystem from "./ControlSystem";
+import Condition from "./Conditions/Condition";
 import {PricingModel} from "./PricingModels/PricingModel";
 import { normalize } from "./TextProcessing/normalize";
 import NumberCoding from "./TextProcessing/NumberCoding";
@@ -28,13 +27,21 @@ class Conversation {
   public pricingModel:PricingModel
 
   private pendingInstructions:Array<string> =new Array<string>()
+  //a list of functions that return the new response when given the latest response attempt
+  private augmentResponseRequests:Array<ResponseRequest> = new Array<ResponseRequest>()
+  //the number of response attempts that are allowed
+  //This is analogous to the maximum number of times the bot will attempt to generate a response
+  private allowedResponseAttempts:number = 2;
 
-  private humanPartyName:string
+  public humanPartyName:string
 
-  private aiPartyName:string
+  public aiPartyName:string
 
   //the preamble of the chatbot encoded for this conversation. This does not include coding information.
-  private encodedPreamble:string 
+  public encodedPreamble:string 
+
+  //this is stored here so that the information is ditched when the conversation is over
+  private conditionLastStates:Map<Condition, boolean> = new Map<Condition, boolean>()
 
   constructor(
     chatbot:Chatbot,
@@ -73,6 +80,16 @@ class Conversation {
     return out
   }
 
+  public async getBotResponse():Promise<string>{
+    this.addPendingInstructions()
+
+    const prompt = this.getFullPreamble() + "\n" + this.history +"\n" + this.aiPartyName + ": "
+
+    const response = (await this.chatbot.callAPI(prompt)).trim()
+
+    return response
+  }
+
   public sendMessage(message:string):Promise<string>{
 
     const processedMessage = this.numberCode.encode(normalize(message))
@@ -82,39 +99,78 @@ class Conversation {
     return new Promise<string>(async (resolve, reject) => {
 
       //do checks
-      await this.controlSystem.onUserMessage(this)
+      await this.chatbot.controlSystem.onUserMessage(this,this.conditionLastStates)
 
-      //add instructions if there are any
-      if(this.pendingInstructions.length>0){
-        this.history+="\n("
-        for(let i=0;i<this.pendingInstructions.length;i++){
-          this.history+=this.pendingInstructions[i]
-          this.history+=" "
-        }
-        this.history+=")"
+      //response generation cycle
 
+      //if augment response requests are present here then they must have been added by the onUserMessage control paris
+
+      var response:string
+      
+      if(this.augmentResponseRequests.length>0){
+        response = await this.augmentResponseRequests.shift()!(undefined)
       }
-      this.pendingInstructions= new Array<string>()
+      else{
+        //the first attempt is always stock getBotResponse
+        response = await this.getBotResponse()
+      }
 
-      const prompt = this.getFullPreamble() + "\n" + this.history +"\n" + this.aiPartyName + ": "
-      const response = (await this.chatbot.callAPI(prompt)).trim()
+      //for loops starts at 1 because one attempt has already been made
+      //we are trying to count API calls here not revisions
+      for(var i=1;i<this.allowedResponseAttempts;i++){
 
+        if(this.augmentResponseRequests.length==0){
+          //do checks this will do actions that might submit a new response request
+          await this.chatbot.controlSystem.onBotMessage(this,this.conditionLastStates)
+        }
+        //this.augmentResponseRequests.length may have changed
+
+        if(this.augmentResponseRequests.length>0){
+          //fulfil the first request
+          const request = this.augmentResponseRequests.shift()
+
+          response = await request!(response)
+          
+        }
+        else{
+          break;
+        }
+      }
+      //in case the response requests didn't clear
+      this.augmentResponseRequests = new Array<ResponseRequest>()
+
+      //from here on the response is final
+
+      //finalize history
       this.history+= "\n" + this.aiPartyName + ": " + response
 
       const decodedResponse = this.numberCode.decode(response)
 
       this.messages.push([message, decodedResponse])
 
-      //do checks
-      await this.controlSystem.onBotMessage(this)
-
       resolve(decodedResponse)
 
     })
   } 
 
+  public submitAugmentResponseRequest(request:ResponseRequest):void{
+    this.augmentResponseRequests.push(request)
+  }
+
   public submitInstruction(instruction:string):void {
     this.pendingInstructions.push(this.numberCode.encode(normalize(instruction)))
+  }
+
+  private addPendingInstructions():void{
+    if(this.pendingInstructions.length>0){
+      this.history+="\n("
+      for(let i=0;i<this.pendingInstructions.length;i++){
+        this.history+=this.pendingInstructions[i]
+        this.history+=" "
+      }
+      this.history+=")"
+    }
+    this.pendingInstructions= new Array<string>()
   }
 
   //return the last message (encoded) or the empty string if there are no messages
