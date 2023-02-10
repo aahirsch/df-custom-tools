@@ -136,6 +136,9 @@ class LanguageSpecifiedCondition extends AbstractCondition{
     //give the AI 2 lines of space before writing its comments
     prompt+="\n\n"
 
+    //TODO make this optional
+    prompt=conversation.numberCode.decode(prompt)
+
 
     return new Promise<boolean>((resolve, reject) => {
       //we allow 5 tokens so that the AI can spit out some spacing characters

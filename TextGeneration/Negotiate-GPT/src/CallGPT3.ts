@@ -2,12 +2,18 @@ const {Configuration, OpenAIApi} = require("openai")
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
+  organization: "org-FCpiZTYOz0vPNKpwx9lIF6YU"
 })
 
 const openai = new OpenAIApi(configuration)
 
 export default (prompt:string,temperature:number, maxTokens: number, stop:Array<string>):Promise<string> => {
+
   return new Promise<string>(async (resolve,reject) => {
+
+    //#FF0000 TEMPORARY LINE
+    await setTimeout(() => {}, 100)
+
     const response = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: prompt,
