@@ -3,7 +3,8 @@ import { DatabaseInterface,Message, Survey, Conversation } from "./DatabaseInter
 import { Logging } from "@google-cloud/logging";
 import { ResponseMessage, LogResponse } from "./types";
 import  {conversion} from "./individualConversion";
-import { firestore } from 'firebase-admin'
+import { firestore, storage } from 'firebase-admin'
+
 
 
 import StructureC from "./StructureC"
@@ -12,6 +13,7 @@ import StructureC from "./StructureC"
 let credentialsLocation = "/Users/christophersebastian/Downloads/heartschat-prod-a505-firebase-adminsdk-dgjo6-35494c7d54.json"
 
 import fs from "fs"
+import { resourceUsage } from "process";
 
 const credentials = JSON.parse(fs.readFileSync(credentialsLocation,"utf-8"))
 
@@ -31,8 +33,15 @@ export async function* readResponses(
 ): AsyncIterable<LogResponse> {
   const logging = new Logging({ projectId: projId });  
 
+  //const sinkName = 'negbot-conv-logs-pubsub';
+  //const sinkNameNew = 'negbot-conv-sink';
+
+  //const sink = logging.sink(sinkName);
+
+
+  logging
   const filterItems = [
-    `logName="projects/heartschat-prod-a505/logs/dialogflow-runtime.googleapis.com%2Frequests"`,
+    `logName="projects/heartschat-prod-a505/logs/cloudfunctions.googleapis.com%2Fcloud-functions"`,
     `timestamp >= "${start}"`,
     `timestamp < "${end}"`,
   ];
@@ -43,26 +52,28 @@ export async function* readResponses(
     maxApiCalls: 20,
     autoPaginate: true,
     filter: filters,
+    resourceNames: ["projects/heartschat-prod-a505"]
+    //heartschat-prod-a505/locations/us-east1/buckets/negbot_sink-1
   });
-  
-  for await (const { data, metadata } of stream) {
-    console.log("ONE")
-    let para = data.queryResult?.parameters
+
+  for await (const { data} of stream) {
+    let para = data?.component?.parameters
     if(para!=undefined) {
-      para['intent'] = data?.queryResult?.intent?.displayName ?? ""
-      para['intentCf'] = data?.queryResult?.intentDetectionConfidence ?? ""
+      para['intent'] = data?.component?.intent ?? ""
+      para['intentCf'] = data?.component?.intentCf ?? ""
     }
     
     yield {
-      surveyId: data?.surveyId ?? "",
-      responseId: data.responseId ?? "",
-      agentId: metadata.labels?.agent_id ?? "",
-      sessionId: metadata.labels?.session_id ?? "",
-      timestamp: metadata.timestamp ?? "",
-      input: data.queryResult?.text ?? "",
-      output: transformMessages(data.queryResult?.responseMessages ?? []),
+      surveyId: data?.component?.surveyId ?? "",
+      responseId: data?.component?.responseId ?? "",
+      agentId: data?.component?.agentId ?? "",
+      sessionId: data?.component?.sessionId ?? "",
+      timestamp: data?.component?.timestamp ?? "",
+      input: data?.component?.input ?? "",
+      output: data?.component?.output ?? "",
       parameters: para ?? {},
     };
+
   }
 }
 

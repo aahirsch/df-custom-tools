@@ -36,7 +36,7 @@ let dateCol: CollectionReference = db.collection("lastRan");
 
 async function wayBackTime() {
   let testingTime = new Date
-  testingTime.setDate(testingTime.getDate() - 40)
+  testingTime.setDate(testingTime.getDate() - 5)
   let y = firestore.Timestamp.fromDate(testingTime)
 
   await dateCol.doc('time').update({
