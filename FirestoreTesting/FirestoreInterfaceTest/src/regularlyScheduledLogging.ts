@@ -38,6 +38,7 @@ export async function* readResponses(
 
   //const sink = logging.sink(sinkName);
 
+  //projects/heartschat-prod-a505/logs/dialogflow-runtime.googleapis.com%2Frequests
 
   logging
   const filterItems = [
@@ -100,7 +101,7 @@ export async function allAtOnce(
   dateCol.doc('time').update({
     date: rn
   });
-  console.log("update successful?")
+
   // map for data
   let map = new Map<String, LogResponse[]>();
 
@@ -115,18 +116,18 @@ export async function allAtOnce(
 
   
   // Get Stream
-  console.log("here!?!?!?1")
-  console.log(rn.toDate().toISOString())
-  console.log(cutOff.toISOString())
+
+
+
   const stream = readResponses(projectId,  cutOff.toISOString(),rn.toDate().toISOString());
-  console.log("i bet this doesn't print")
+
   // loops
   for await (const response of stream) {
     // gets log's date
     if(response.agentId == "") {
       continue;
     }
-    console.log("inside")
+
     let curDate: string = response.timestamp;
     // Add to our map
     if(map.has(response.responseId)) {
@@ -147,11 +148,12 @@ export async function allAtOnce(
         let lr: LogResponse[] = map.get(response.responseId) ?? [];
         if(lr!= undefined) {
           let temp: Conversation = conversion(lr);
-          console.log(temp)
+
           await StructureC.insertConversation(col,temp);
+          console.log("uploaded")
         }
         map.delete(response.responseId);
-        return;
+        
       } 
     }
   }
