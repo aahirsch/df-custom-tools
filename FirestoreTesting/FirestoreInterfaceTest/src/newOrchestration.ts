@@ -10,7 +10,7 @@ import StructureC from "./StructureC"
 
 declare var require: any
 
-let credentialsLocation = "/Users/christophersebastian/Downloads/heartschat-prod-a505-firebase-adminsdk-dgjo6-35494c7d54.json"
+let credentialsLocation = "/Users/christophersebastian/Downloads/heartschat-prod-cred.json"
 
 
 import admin, { firestore } from 'firebase-admin'
@@ -29,14 +29,14 @@ admin.initializeApp({
 const db: Firestore = admin.firestore()
 db.settings({ ignoreUndefinedProperties: true })
 
-let col: CollectionReference = db.collection("cloudTest");
+let col: CollectionReference = db.collection("officialCloudEdgeCaseTest");
 
 let dateCol: CollectionReference = db.collection("lastRan");
 
 
 async function wayBackTime() {
   let testingTime = new Date
-  testingTime.setDate(testingTime.getDate() - 30)
+  testingTime.setDate(testingTime.getDate() - 1)
   let y = firestore.Timestamp.fromDate(testingTime)
 
   await dateCol.doc('time').update({
@@ -48,7 +48,6 @@ async function wayBackTime() {
 
 
 async function run() {
-  await wayBackTime()
   console.log("running")
   allAtOnce("heartschat-prod-a505",dateCol,col)
 }
