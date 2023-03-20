@@ -10,7 +10,7 @@ import { firestore, storage } from 'firebase-admin'
 import StructureC from "./StructureC"
 
 
-let credentialsLocation = "/Users/christophersebastian/Downloads/heartschat-prod-a505-firebase-adminsdk-dgjo6-35494c7d54.json"
+let credentialsLocation = "/Users/christophersebastian/Downloads/heartschat-prod-cred.json"
 
 import fs from "fs"
 import { resourceUsage } from "process";
